@@ -1,0 +1,50 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "WikiGraph",
+  "type": "object",
+  "properties": {
+    "generatedAt": { "type": "string", "format": "date-time" },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "nodeCount": { "type": "number" },
+        "edgeCount": { "type": "number" },
+        "orphanCount": { "type": "number" }
+      },
+      "required": ["nodeCount", "edgeCount", "orphanCount"]
+    },
+    "nodes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "title": { "type": "string" },
+          "path": { "type": "string" },
+          "folder": { "type": "string" },
+          "tags": { "type": "array", "items": { "type": "string" } },
+          "aliases": { "type": "array", "items": { "type": "string" } },
+          "excerpt": { "type": "string" },
+          "outgoingCount": { "type": "number" },
+          "incomingCount": { "type": "number" },
+          "isOrphan": { "type": "boolean" }
+        },
+        "required": ["id", "title", "path", "folder", "tags", "aliases", "excerpt", "outgoingCount", "incomingCount", "isOrphan"]
+      }
+    },
+    "edges": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "source": { "type": "string" },
+          "target": { "type": "string" },
+          "type": { "type": "string", "enum": ["wikilink", "markdown-link"] }
+        },
+        "required": ["id", "source", "target", "type"]
+      }
+    }
+  },
+  "required": ["generatedAt", "metadata", "nodes", "edges"]
+}

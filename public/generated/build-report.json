@@ -1,0 +1,51 @@
+{
+  "generatedAt": "2026-10-11T08:13:24.159Z",
+  "totalParsedNotes": 47,
+  "totalEdges": 86,
+  "unresolvedLinks": [
+    {
+      "sourceId": "index",
+      "sourcePath": "index.md",
+      "linkText": "Markdown-First Retrieval",
+      "rawTarget": "Markdown-First Retrieval"
+    },
+    {
+      "sourceId": "index",
+      "sourcePath": "index.md",
+      "linkText": "Semantic Search Enablement Timing",
+      "rawTarget": "Semantic Search Enablement Timing"
+    },
+    {
+      "sourceId": "index",
+      "sourcePath": "index.md",
+      "linkText": "Wiki Index as Routing Layer",
+      "rawTarget": "Wiki Index as Routing Layer"
+    },
+    {
+      "sourceId": "index",
+      "sourcePath": "index.md",
+      "linkText": "Wiki Maintenance and Lint Layers",
+      "rawTarget": "Wiki Maintenance and Lint Layers"
+    },
+    {
+      "sourceId": "index",
+      "sourcePath": "index.md",
+      "linkText": "Markdown-First Retrieval vs Early Semantic Search for Small Pilot Vaults",
+      "rawTarget": "Markdown-First Retrieval vs Early Semantic Search for Small Pilot Vaults"
+    },
+    {
+      "sourceId": "index",
+      "sourcePath": "index.md",
+      "linkText": "Retrieval Architecture at Ten Thousand Pages",
+      "rawTarget": "Retrieval Architecture at Ten Thousand Pages"
+    },
+    {
+      "sourceId": "index",
+      "sourcePath": "index.md",
+      "linkText": "docs/phase-2/page-taxonomy.md",
+      "rawTarget": "../docs/phase-2/page-taxonomy.md"
+    }
+  ],
+  "ambiguousLinks": [],
+  "orphans": []
+}
