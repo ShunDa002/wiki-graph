@@ -5,6 +5,7 @@ import {
   calculateNodeRadius,
   initializeSimulationNodes,
   stepPhysicsSimulation,
+  stepConstrainedPhysics,
   shouldRenderNodeLabel,
   getNeonNodeTheme,
   SimNode,
@@ -363,6 +364,147 @@ describe('Force Simulation Physics and Degree Centrality', () => {
       expect(theme.category).toBe('blue');
       expect(theme.accentHex).toBe('#38bdf8');
       expect(theme.categoryLabel).toBe('Note');
+    });
+  });
+
+  describe('Constrained Spring Physics (stepConstrainedPhysics)', () => {
+    function makeSimNode(partial: Partial<SimNode> & { id: string }): SimNode {
+      return {
+        id: partial.id,
+        label: partial.label || partial.id,
+        type: partial.type || 'note',
+        folder: partial.folder || '',
+        tags: partial.tags || [],
+        excerpt: partial.excerpt || '',
+        incomingCount: partial.incomingCount ?? 0,
+        outgoingCount: partial.outgoingCount ?? 0,
+        degree: partial.degree ?? 1,
+        radius: partial.radius ?? 10,
+        isIndex: partial.isIndex ?? false,
+        isOrphan: partial.isOrphan ?? false,
+        x: partial.x ?? 0,
+        y: partial.y ?? 0,
+        vx: partial.vx ?? 0,
+        vy: partial.vy ?? 0,
+        fx: partial.fx ?? null,
+        fy: partial.fy ?? null,
+        anchorX: partial.anchorX ?? null,
+        anchorY: partial.anchorY ?? null,
+        mass: partial.mass ?? 1,
+      };
+    }
+
+    it('pulls nodes toward anchor positions with expected spring strength (~0.03-0.05)', () => {
+      const node = makeSimNode({
+        id: 'n1',
+        x: 100,
+        y: 100,
+        anchorX: 130,
+        anchorY: 100,
+        vx: 0,
+        vy: 0,
+        mass: 1,
+      });
+
+      // Single step with anchorSpring = 0.04 and alpha = 1.0
+      stepConstrainedPhysics([node], [], 500, 500, 1.0, {
+        ...DEFAULT_PHYSICS_PARAMS,
+        anchorSpring: 0.04,
+      });
+
+      // Node should move towards anchor (positive x)
+      expect(node.vx).toBeGreaterThan(0.8);
+      expect(node.x).toBeGreaterThan(100);
+      expect(node.x).toBeLessThanOrEqual(130);
+    });
+
+    it('enforces maximum drift constraint (~30-50px) when displacement exceeds maxDrift', () => {
+      const node = makeSimNode({
+        id: 'n1',
+        x: 100,
+        y: 100,
+        anchorX: 200, // 100px away from anchor
+        anchorY: 100,
+        vx: 0,
+        vy: 0,
+        mass: 1,
+      });
+
+      stepConstrainedPhysics([node], [], 500, 500, 1.0, {
+        ...DEFAULT_PHYSICS_PARAMS,
+        maxDrift: 45,
+      });
+
+      const driftDist = Math.hypot(node.x - node.anchorX!, node.y - node.anchorY!);
+      expect(driftDist).toBeLessThanOrEqual(45.01);
+    });
+
+    it('applies collision avoidance between constrained nodes to prevent overlap', () => {
+      const n1 = makeSimNode({
+        id: 'n1',
+        x: 100,
+        y: 100,
+        anchorX: 100,
+        anchorY: 100,
+        radius: 15,
+        mass: 1,
+      });
+      const n2 = makeSimNode({
+        id: 'n2',
+        x: 105,
+        y: 100,
+        anchorX: 105,
+        anchorY: 100,
+        radius: 15,
+        mass: 1,
+      });
+
+      const initialDist = Math.hypot(n2.x - n1.x, n2.y - n1.y);
+      expect(initialDist).toBe(5);
+
+      stepConstrainedPhysics([n1, n2], [], 500, 500, 1.0);
+
+      const newDist = Math.hypot(n2.x - n1.x, n2.y - n1.y);
+      // Collision should have pushed them apart
+      expect(newDist).toBeGreaterThan(initialDist);
+    });
+
+    it('leaves nodes with anchorX === null or anchorY === null unaffected', () => {
+      const unanchored = makeSimNode({
+        id: 'unanchored',
+        x: 250,
+        y: 250,
+        vx: 0,
+        vy: 0,
+        anchorX: null,
+        anchorY: null,
+      });
+
+      stepConstrainedPhysics([unanchored], [], 500, 500, 1.0);
+
+      expect(unanchored.x).toBe(250);
+      expect(unanchored.y).toBe(250);
+      expect(unanchored.vx).toBe(0);
+      expect(unanchored.vy).toBe(0);
+    });
+
+    it('respects user dragging (fx/fy) and pins coordinates while dragged', () => {
+      const draggedNode = makeSimNode({
+        id: 'dragged',
+        x: 100,
+        y: 100,
+        anchorX: 100,
+        anchorY: 100,
+        fx: 350,
+        fy: 400,
+      });
+
+      stepConstrainedPhysics([draggedNode], [], 500, 500, 1.0);
+
+      expect(draggedNode.x).toBe(350);
+      expect(draggedNode.y).toBe(400);
+      expect(draggedNode.vx).toBe(0);
+      expect(draggedNode.vy).toBe(0);
     });
   });
 });

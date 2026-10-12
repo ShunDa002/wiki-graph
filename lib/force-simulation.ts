@@ -25,6 +25,8 @@ export interface SimNode {
   startY?: number;
   targetX?: number;
   targetY?: number;
+  anchorX?: number | null; // Layout-computed anchor position for constrained spring physics
+  anchorY?: number | null;
   mass: number;
 }
 
@@ -305,6 +307,8 @@ export function initializeSimulationNodes(
       vy,
       fx: existing?.fx ?? null,
       fy: existing?.fy ?? null,
+      anchorX: existing?.anchorX ?? null,
+      anchorY: existing?.anchorY ?? null,
       mass,
     };
   });
@@ -337,6 +341,8 @@ export interface PhysicsParams {
   centering: number;       // Gravitational pull to center
   damping: number;         // Friction factor
   collisionPadding: number;// Distance between node perimeters
+  anchorSpring?: number;   // Anchor spring constant for constrained layouts (default ~0.04)
+  maxDrift?: number;       // Max drift distance from anchor (default ~40-45px)
 }
 
 export const DEFAULT_PHYSICS_PARAMS: PhysicsParams = {
@@ -346,6 +352,8 @@ export const DEFAULT_PHYSICS_PARAMS: PhysicsParams = {
   centering: 0.012,
   damping: 0.88,
   collisionPadding: 8,
+  anchorSpring: 0.04,
+  maxDrift: 45,
 };
 
 /**
@@ -448,6 +456,125 @@ export function stepPhysicsSimulation(
     // Apply velocity
     node.x += node.vx;
     node.y += node.vy;
+  }
+}
+
+/**
+ * Runs a single step of constrained spring physics for non-force layouts
+ * (Hierarchical Top-Down, Hierarchical Left-Right, Grid, Concentric Radial).
+ * Anchors each node to its computed layout position (anchorX, anchorY) via moderate spring force
+ * (~0.03-0.05), applies collision avoidance and gentle organic jitter, and limits drift to ~30-50px.
+ * Nodes with anchorX === null or anchorY === null are unaffected.
+ */
+export function stepConstrainedPhysics(
+  nodes: SimNode[],
+  edges: SimEdge[],
+  width: number,
+  height: number,
+  alpha: number,
+  params: PhysicsParams = DEFAULT_PHYSICS_PARAMS
+): void {
+  if (alpha <= 0.0001 || nodes.length === 0) return;
+
+  const springConstant = params.anchorSpring ?? 0.04;
+  const maxDrift = params.maxDrift ?? 45; // ~30-50px allowed drift
+  const nodeCount = nodes.length;
+
+  // 1. Collision avoidance between pairs of nodes so geometric discs do not overlap
+  for (let i = 0; i < nodeCount; i++) {
+    const n1 = nodes[i];
+    for (let j = i + 1; j < nodeCount; j++) {
+      const n2 = nodes[j];
+      const dx = n2.x - n1.x;
+      const dy = n2.y - n1.y;
+      const dist = Math.hypot(dx, dy) || 0.001;
+      const minDistance = n1.radius + n2.radius + params.collisionPadding;
+
+      if (dist < minDistance) {
+        const overlap = (minDistance - dist) * 0.5 * alpha;
+        const pushX = (dx / dist) * overlap;
+        const pushY = (dy / dist) * overlap;
+
+        if (n1.anchorX !== null && n1.anchorX !== undefined) {
+          n1.vx -= pushX / n1.mass;
+          n1.vy -= pushY / n1.mass;
+          n1.x -= pushX * 0.5;
+          n1.y -= pushY * 0.5;
+        }
+
+        if (n2.anchorX !== null && n2.anchorX !== undefined) {
+          n2.vx += pushX / n2.mass;
+          n2.vy += pushY / n2.mass;
+          n2.x += pushX * 0.5;
+          n2.y += pushY * 0.5;
+        }
+      }
+    }
+  }
+
+  // 2. Anchor-spring force, snap-at-rest, and velocity integration
+  for (let i = 0; i < nodeCount; i++) {
+    const node = nodes[i];
+
+    // Nodes without an anchor are unaffected
+    if (
+      node.anchorX === null ||
+      node.anchorX === undefined ||
+      node.anchorY === null ||
+      node.anchorY === undefined
+    ) {
+      continue;
+    }
+
+    // If dragged by user, pin to cursor coordinates
+    if (typeof node.fx === 'number' && typeof node.fy === 'number') {
+      node.x = node.fx;
+      node.y = node.fy;
+      node.vx = 0;
+      node.vy = 0;
+      continue;
+    }
+
+    // Anchor spring pull: F = displacement * springStrength * alpha
+    const dx = node.anchorX - node.x;
+    const dy = node.anchorY - node.y;
+    const distToAnchor = Math.hypot(dx, dy);
+
+    // If resting precisely at anchor, clamp firmly to prevent jitter and preserve pristine layout geometry
+    if (distToAnchor < 0.25) {
+      node.x = node.anchorX;
+      node.y = node.anchorY;
+      node.vx = 0;
+      node.vy = 0;
+      continue;
+    }
+
+    const springStrength = (springConstant * 0.75 + 0.02) * alpha;
+    const springForceX = dx * springStrength;
+    const springForceY = dy * springStrength;
+
+    node.vx += springForceX / node.mass;
+    node.vy += springForceY / node.mass;
+
+    // Apply damping friction
+    node.vx *= params.damping;
+    node.vy *= params.damping;
+
+    // Apply velocity
+    node.x += node.vx;
+    node.y += node.vy;
+
+    // Max drift constraint (~30-50px from anchor position)
+    const driftX = node.x - node.anchorX;
+    const driftY = node.y - node.anchorY;
+    const driftDist = Math.hypot(driftX, driftY);
+
+    if (driftDist > maxDrift && driftDist > 0.001) {
+      node.x = node.anchorX + (driftX / driftDist) * maxDrift;
+      node.y = node.anchorY + (driftY / driftDist) * maxDrift;
+      node.vx *= 0.5;
+      node.vy *= 0.5;
+    }
   }
 }
 

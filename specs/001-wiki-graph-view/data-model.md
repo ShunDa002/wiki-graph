@@ -61,10 +61,11 @@ Extended node model for the 60fps HTML5 Canvas physics & multi-layout engine:
 - `isIndex`: boolean (Flag for root index / Map of Content pillars)
 - `isOrphan`: boolean (Isolated node status)
 - `x`, `y`: number (Current active world space coordinates)
-- `vx`, `vy`: number (Physics velocity vectors, used during `'force'` mode)
+- `vx`, `vy`: number (Physics velocity vectors, used in all modes: unconstrained in `'force'`, constrained anchor-spring in other layouts)
 - `fx`, `fy`: number | null (Optional pin coordinates during user dragging)
 - `startX`, `startY`: number (Origin coordinates during layout transition tweening)
 - `targetX`, `targetY`: number (Destination coordinates during layout transition tweening)
+- `anchorX`, `anchorY`: number | null (Layout-computed anchor position for constrained spring physics in non-force modes; null in `'force'` mode)
 - `mass`: number (Inertial mass scaling with degree)
 
 ## SimEdge (Canvas Connection Entity)

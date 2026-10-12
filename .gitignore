@@ -23,6 +23,8 @@
 # misc
 .DS_Store
 *.pem
+.wiki-temp/
+.wiki-temp-staging/
 
 # debug
 npm-debug.log*

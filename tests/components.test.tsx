@@ -1,11 +1,12 @@
 import React from 'react';
+import '@testing-library/jest-dom/vitest';
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { ErrorPanel } from '../components/graph/ErrorPanel';
 import { SearchBox } from '../components/graph/SearchBox';
 import { FilterPanel } from '../components/graph/FilterPanel';
 import { NodePreview } from '../components/graph/NodePreview';
-import { ApiError, GraphNode, GraphResponse, GraphResponseSchema } from '../lib/api';
+import { ApiError, GraphNode, GraphNodeSchema, GraphResponse, GraphResponseSchema } from '../lib/api';
 
 describe('ErrorPanel', () => {
   it('renders Service Unavailable error and calls onRetry when clicked', () => {
@@ -80,23 +81,21 @@ describe('FilterPanel', () => {
 });
 
 describe('NodePreview', () => {
-  const mockNode: GraphNode = {
+  const mockNode: GraphNode = GraphNodeSchema.parse({
     id: 'test-node',
     label: 'Test Node',
     type: 'note',
-    metadata: {
-      title: 'Neural Networks Overview',
-      path: 'concepts/nn.md',
-      folder: 'concepts',
-      tags: ['ai', 'deep-learning'],
-      aliases: ['NN'],
-      excerpt: 'Comprehensive guide to artificial neural networks.',
-      status: 'active',
-      incomingCount: 4,
-      outgoingCount: 7,
-      isOrphan: false,
-    },
-  };
+    title: 'Neural Networks Overview',
+    path: 'concepts/nn.md',
+    folder: 'concepts',
+    tags: ['ai', 'deep-learning'],
+    aliases: ['NN'],
+    excerpt: 'Comprehensive guide to artificial neural networks.',
+    status: 'active',
+    incomingCount: 4,
+    outgoingCount: 7,
+    isOrphan: false,
+  });
 
   it('renders note details, excerpt, link counts and handles close', () => {
     const onClose = vi.fn();
@@ -211,6 +210,26 @@ describe('ForceGraphCanvas', () => {
 
     const reclusterBtn = screen.getByTitle(/Re-cluster/i);
     fireEvent.click(reclusterBtn);
+  });
+
+  it('does not display "No notes match current filters" when notes are present in graphData', async () => {
+    const { ForceGraphCanvas } = await import('../components/graph/ForceGraphCanvas');
+    render(<ForceGraphCanvas graphData={mockGraphData} />);
+
+    expect(screen.queryByText('No notes match current filters')).not.toBeInTheDocument();
+  });
+
+  it('displays "No notes match current filters" when filtered nodes are empty', async () => {
+    const { ForceGraphCanvas } = await import('../components/graph/ForceGraphCanvas');
+    const emptyGraphData: GraphResponse = GraphResponseSchema.parse({
+      ...mockGraphData,
+      nodes: [],
+      edges: [],
+    });
+
+    render(<ForceGraphCanvas graphData={emptyGraphData} />);
+
+    expect(screen.getByText('No notes match current filters')).toBeInTheDocument();
   });
 });
 

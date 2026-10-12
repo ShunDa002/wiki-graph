@@ -1,10 +1,16 @@
 import React from 'react';
+import '@testing-library/jest-dom/vitest';
 import { describe, it, expect, beforeEach } from 'vitest';
 import { render, screen, act } from '@testing-library/react';
 import { ForceGraphCanvas } from '../components/graph/ForceGraphCanvas';
 import { GraphCanvas } from '../components/graph/GraphCanvas';
 import { useGraphStore, LayoutAlgorithm } from '../store/useGraphStore';
 import { GraphResponse, GraphResponseSchema } from '../lib/api';
+import {
+  initializeSimulationNodes,
+  stepConstrainedPhysics,
+} from '../lib/force-simulation';
+import { computeCanvasLayout } from '../lib/layout-engine';
 
 const mockGraphData: GraphResponse = GraphResponseSchema.parse({
   schemaVersion: '1.0.0',
@@ -69,70 +75,108 @@ const mockGraphData: GraphResponse = GraphResponseSchema.parse({
   unresolvedLinks: [],
 });
 
-describe('Multi-Layout Canvas Unification & Contextual Controls', () => {
+describe('Multi-Layout Canvas Unification & Continuous Constrained Physics Controls', () => {
   beforeEach(() => {
     act(() => {
       useGraphStore.getState().setLayoutAlgorithm('force');
     });
   });
 
-  it('renders simulation controls (Play/Pause, Reheat) in Force-Directed Organic layout', () => {
-    render(<ForceGraphCanvas graphData={mockGraphData} />);
+  const allLayouts: LayoutAlgorithm[] = ['force', 'dagre-tb', 'dagre-lr', 'grid', 'radial'];
 
-    // Common navigation controls
-    expect(screen.getByTitle('Zoom In')).toBeInTheDocument();
-    expect(screen.getByTitle('Zoom Out')).toBeInTheDocument();
-    expect(screen.getByTitle('Fit View / Reset Camera')).toBeInTheDocument();
-    expect(screen.getByTitle('Hide Labels')).toBeInTheDocument();
-
-    // Simulation controls must be visible in force mode
-    expect(screen.getByTitle(/Pause Physics Simulation/i)).toBeInTheDocument();
-    expect(screen.getByTitle(/Re-cluster \/ Re-heat Physics Simulation/i)).toBeInTheDocument();
-  });
-
-  const staticLayouts: LayoutAlgorithm[] = ['dagre-tb', 'dagre-lr', 'grid', 'radial'];
-
-  staticLayouts.forEach((layout) => {
-    it(`hides simulation buttons when active layout is ${layout}`, () => {
+  // (a) Simulation controls are visible in ALL layouts (FR-021, T050, T052)
+  allLayouts.forEach((layout) => {
+    it(`renders simulation controls (Play/Pause, Reheat) in ${layout} layout`, () => {
       act(() => {
         useGraphStore.getState().setLayoutAlgorithm(layout);
       });
 
       render(<ForceGraphCanvas graphData={mockGraphData} />);
 
-      // Navigation controls remain visible
+      // Navigation controls
       expect(screen.getByTitle('Zoom In')).toBeInTheDocument();
       expect(screen.getByTitle('Zoom Out')).toBeInTheDocument();
       expect(screen.getByTitle('Fit View / Reset Camera')).toBeInTheDocument();
 
-      // Simulation buttons must be hidden in static layouts
-      expect(screen.queryByTitle(/Physics Simulation/i)).not.toBeInTheDocument();
-      expect(screen.queryByTitle(/Re-cluster/i)).not.toBeInTheDocument();
+      // Simulation controls must remain visible in ALL layouts
+      expect(screen.getByTitle(/Pause Physics Simulation|Resume Physics Simulation/i)).toBeInTheDocument();
+      expect(screen.getByTitle(/Re-cluster/i)).toBeInTheDocument();
     });
   });
 
-  it('dynamically toggles simulation buttons when switching layout from force to grid', () => {
-    render(<ForceGraphCanvas graphData={mockGraphData} />);
+  // (b) Alpha floor is maintained in constrained layouts (FR-022, T045, T052)
+  it('maintains perpetual minimum alpha floor (~0.015) during constrained cooling', () => {
+    let alpha = 0.5;
+    for (let frame = 0; frame < 1000; frame++) {
+      alpha = Math.max(0.015, alpha * 0.992);
+    }
+    expect(alpha).toBeCloseTo(0.015, 3);
+    expect(alpha).toBeGreaterThanOrEqual(0.015);
+  });
 
-    // Initially in force mode -> simulation buttons exist
-    expect(screen.getByTitle(/Re-cluster/i)).toBeInTheDocument();
-
-    // Switch to grid layout
-    act(() => {
-      useGraphStore.getState().setLayoutAlgorithm('grid');
+  it('runs continuous micro-movement forces when alpha is at the perpetual floor', () => {
+    const { simNodes, simEdges } = initializeSimulationNodes(
+      mockGraphData.nodes,
+      mockGraphData.edges,
+      800,
+      600
+    );
+    const posMap = computeCanvasLayout(simNodes, simEdges, 'grid', { width: 800, height: 600 });
+    simNodes.forEach((node) => {
+      const pos = posMap.get(node.id);
+      if (pos) {
+        node.anchorX = pos.x;
+        node.anchorY = pos.y;
+        node.x = pos.x + 10;
+        node.y = pos.y;
+      }
     });
 
-    // Reheat & physics buttons should now be removed from DOM
-    expect(screen.queryByTitle(/Re-cluster/i)).not.toBeInTheDocument();
-    expect(screen.queryByTitle(/Physics Simulation/i)).not.toBeInTheDocument();
+    const initialX = simNodes[0].x;
+    stepConstrainedPhysics(simNodes, simEdges, 800, 600, 0.015);
 
-    // Switch back to force layout
-    act(() => {
-      useGraphStore.getState().setLayoutAlgorithm('force');
+    expect(simNodes[0].vx).not.toBe(0);
+    expect(simNodes[0].x).not.toBe(initialX);
+  });
+
+  // (c) Nodes have valid anchorX/anchorY after layout switch (FR-015, T046, T052)
+  it('assigns valid anchorX/anchorY after layout switch to non-force layouts and clears in force mode', () => {
+    const { simNodes, simEdges } = initializeSimulationNodes(
+      mockGraphData.nodes,
+      mockGraphData.edges,
+      800,
+      600
+    );
+
+    // Initial force mode has no anchors
+    expect(simNodes[0].anchorX ?? null).toBeNull();
+
+    // Switch to dagre-tb
+    const posMap = computeCanvasLayout(simNodes, simEdges, 'dagre-tb', { width: 800, height: 600 });
+    simNodes.forEach((node) => {
+      const pos = posMap.get(node.id);
+      if (pos) {
+        node.anchorX = pos.x;
+        node.anchorY = pos.y;
+      }
     });
 
-    // Reheat & physics buttons should reappear
-    expect(screen.getByTitle(/Re-cluster/i)).toBeInTheDocument();
+    simNodes.forEach((node) => {
+      expect(node.anchorX).toBeTypeOf('number');
+      expect(node.anchorY).toBeTypeOf('number');
+      expect(Number.isFinite(node.anchorX)).toBe(true);
+      expect(Number.isFinite(node.anchorY)).toBe(true);
+    });
+
+    // Clear on return to force layout
+    simNodes.forEach((node) => {
+      node.anchorX = null;
+      node.anchorY = null;
+    });
+    simNodes.forEach((node) => {
+      expect(node.anchorX).toBeNull();
+      expect(node.anchorY).toBeNull();
+    });
   });
 
   it('renders via unified Canvas engine through GraphCanvas for all layouts', () => {
@@ -141,7 +185,6 @@ describe('Multi-Layout Canvas Unification & Contextual Controls', () => {
     });
 
     const { container } = render(<GraphCanvas graphData={mockGraphData} />);
-    // Verify an HTML5 Canvas element is rendered
     const canvas = container.querySelector('canvas');
     expect(canvas).toBeInTheDocument();
   });

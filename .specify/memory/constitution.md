@@ -1,9 +1,8 @@
 <!--
 Sync Impact Report:
-- Version change: 1.1.0 → 1.2.0
+- Version change: 1.2.0 → 1.3.0
 - Modified principles:
-  - III. Modern Tech Stack → Ratified unified HTML5 Canvas 2D engine for 60 FPS multi-layout rendering with Dagre layout geometry; React Flow retained as optional fallback
-  - IV. Scalability & Performance → Added explicit 60 FPS Canvas target and physics suspension constraint for static layouts
+  - IV. Scalability & Performance → Replaced "physics MUST be suspended during static layouts" with continuous constrained spring physics (anchor spring ~0.03-0.05, perpetual minimum alpha ~0.01-0.02) across all layouts
 - Added sections: None
 - Removed sections: None
 - Follow-up TODOs: None
@@ -22,7 +21,7 @@ The public-facing website MUST have no write capability. It MUST NOT include Git
 The frontend MUST be built using Next.js, React, TypeScript, and Tailwind CSS. Graph visualization MUST utilize a high-performance HTML5 Canvas 2D engine supporting unified multi-layout rendering (Force-Directed Organic, Hierarchical, Grid, and Concentric Radial) with Dagre for hierarchical coordinate computation. React Flow MAY be retained as an optional fallback or hybrid component. Data fetching MUST use TanStack Query, and client state SHOULD use Zustand.
 
 ### IV. Scalability & Performance
-The frontend MUST optimize for 60 FPS client-side Canvas rendering with dynamic degree centrality scaling and adaptive label level-of-detail. Physics simulation MUST be suspended during static layouts (Hierarchical, Grid, Radial) to prevent unwanted node drifting and preserve strict geometric structure.
+The frontend MUST optimize for 60 FPS client-side Canvas rendering with dynamic degree centrality scaling and adaptive label level-of-detail. All layouts MUST run continuous physics simulation: unconstrained force-directed physics for Organic mode, and constrained spring physics (anchored to computed layout positions with collision avoidance, anchor spring constant ~0.03-0.05, max drift ~30-50px, perpetual minimum alpha ~0.01-0.02) for Hierarchical, Grid, and Radial modes.
 
 ### V. Maintainability
 Code MUST remain well-structured to support future integrations, specifically the planned RAG chatbot. State management SHOULD rely on native React state initially, only introducing external stores like Zustand if interaction logic dictates.
@@ -52,4 +51,4 @@ Data security and integrity are paramount:
 
 All PRs and architectural changes MUST preserve the stateless, read-only nature of the frontend application. The frontend should act purely as a consumer of the FastAPI backend, ensuring that the system remains ready for future RAG chatbot integration. Amendments to this constitution require documentation, semantic version increment, and synchronization across all active specification artifacts.
 
-**Version**: 1.2.0 | **Ratified**: 2026-10-10 | **Last Amended**: 2026-10-11
+**Version**: 1.3.0 | **Ratified**: 2026-10-06 | **Last Amended**: 2026-10-11

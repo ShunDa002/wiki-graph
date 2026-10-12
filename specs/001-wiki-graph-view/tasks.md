@@ -96,9 +96,9 @@
 
 ## Phase 7: User Story 4 - Unified Neon Graph Theme & Multi-Layout Canvas Visualization (Priority: P1)
 
-**Goal**: Deliver an interactive HTML5 Canvas visualization rendering all layouts (Force-Directed Organic, Hierarchical Top-Down, Hierarchical Left-Right, Grid Structure, Concentric Radial) using the luminescent Neon theme, degree centrality hierarchy, uniform straight Neon Blue edge vectors, smooth layout transition tweening, and contextual overlay controls.
+**Goal**: Deliver an interactive HTML5 Canvas visualization rendering all layouts (Force-Directed Organic, Hierarchical Top-Down, Hierarchical Left-Right, Grid Structure, Concentric Radial) using the luminescent Neon theme, degree centrality hierarchy, uniform straight Neon Blue edge vectors, smooth layout transition tweening, and unified overlay controls with continuous constrained physics across all layouts.
 
-**Independent Test**: Switch through all 5 layout modes in the toolbar; verify all layouts render circular neon nodes on the Deep Navy canvas with straight Neon Blue links, smooth 500-600ms coordinate tweening, zero physics drift in static layouts, and contextual visibility of simulation controls per `quickstart.md`.
+**Independent Test**: Switch through all 5 layout modes in the toolbar; verify all layouts render circular neon nodes on the Deep Navy canvas with straight Neon Blue links, smooth 500-600ms coordinate tweening, constrained organic breathing in non-force layouts (~30-50px max drift, perpetual min alpha), elastic drag snap-back, and simulation controls visible in all modes per `quickstart.md`.
 
 ### Sub-phase 7.1: Force-Directed Physics & Baseline Neon Theme (Completed)
 
@@ -122,6 +122,21 @@
 - [X] T040 [US4] Implement integration/component tests for multi-layout Canvas switching and contextual controls in `tests/canvas-multilayout.test.tsx`.
 - [X] T041 [US4] Run end-to-end multi-layout validation scenarios per `specs/001-wiki-graph-view/quickstart.md` across all 5 layouts.
 
+### Sub-phase 7.3: Continuous Constrained Physics for All Layouts
+
+- [X] T042 [P] [US4] Add `anchorX` and `anchorY` fields to the `SimNode` interface in `lib/force-simulation.ts` (type: `number | null`, default: `null`). These fields store the layout-computed anchor position for constrained spring physics in non-force modes.
+- [X] T043 [P] [US4] Implement `stepConstrainedPhysics()` function in `lib/force-simulation.ts` that applies anchor-spring forces (spring constant ~0.03-0.05 per FR-015), collision avoidance, and centering — pulling each node toward its `anchorX`/`anchorY` while allowing max drift ~30-50px. Must accept the same `PhysicsParams` interface extended with `anchorSpring: number` (default ~0.04).
+- [X] T044 [US4] Update the physics render loop in `components/graph/ForceGraphCanvas.tsx` to call `stepConstrainedPhysics()` instead of skipping physics entirely when `layoutAlgorithm !== 'force'`. Pass `simNodesRef.current` (which have `anchorX`/`anchorY` set) and current alpha. Remove the `isForceLayout` guard that currently prevents physics from running in non-force modes (around line 424-437).
+- [X] T045 [US4] Implement perpetual minimum alpha floor in the render loop of `components/graph/ForceGraphCanvas.tsx`: when `layoutAlgorithm !== 'force'`, clamp `alphaRef.current` to never drop below ~0.015 (FR-022). In force mode, alpha continues to cool to zero as before.
+- [X] T046 [US4] Update the layout transition effect in `components/graph/ForceGraphCanvas.tsx` (the `useEffect` at ~line 167) to set `anchorX`/`anchorY` on each `SimNode` when switching to a non-force layout. When switching to `'force'`, set `anchorX = null` and `anchorY = null` to disable anchor springs.
+- [X] T047 [US4] Update the data initialization effect in `components/graph/ForceGraphCanvas.tsx` (the `useEffect` at ~line 109) to set `anchorX`/`anchorY` from `computeCanvasLayout()` results when `layoutAlgorithm !== 'force'`, so nodes have valid anchors on initial load.
+- [X] T048 [US4] Implement elastic rubber band drag behavior in `components/graph/ForceGraphCanvas.tsx`: on `mouseup`/`pointerup`, when `layoutAlgorithm !== 'force'`, clear `fx`/`fy` (unpin the node) so the anchor spring pulls it back to its `anchorX`/`anchorY` position (FR-023). In `'force'` mode, preserve existing behavior where released nodes stay at their dropped position.
+- [X] T049 [US4] Update the Reheat handler (`handleReheat`) in `components/graph/ForceGraphCanvas.tsx` to, when `layoutAlgorithm !== 'force'`: re-compute layout coordinates via `computeCanvasLayout()`, update `anchorX`/`anchorY` on all `SimNode`s to the new positions, and reset `alphaRef.current = 1.0` (FR-024). In `'force'` mode, preserve existing reheat behavior (alpha reset only).
+- [X] T050 [US4] Update the canvas overlay controls in `components/graph/ForceGraphCanvas.tsx` to show Play/Pause and Reheat buttons in ALL layout modes (FR-021). Remove the `{layoutAlgorithm === 'force' && (...)}` conditional guard around the simulation control buttons (around line 940-963).
+- [X] T051 [P] [US4] Add unit tests for `stepConstrainedPhysics()` in `tests/force-simulation.test.ts`: verify anchor-spring pull strength (~0.03-0.05), max drift constraint (~30-50px from anchor), collision avoidance between constrained nodes, and that nodes with `anchorX = null` are unaffected.
+- [X] T052 [P] [US4] Update integration tests in `tests/canvas-multilayout.test.tsx` to verify: (a) simulation controls are visible in all layouts, (b) alpha floor is maintained in constrained layouts, (c) nodes have valid `anchorX`/`anchorY` after layout switch.
+- [X] T053 [US4] Run end-to-end validation scenarios per updated `specs/001-wiki-graph-view/quickstart.md` across all 5 layouts, specifically verifying: constrained organic breathing (#2), unified overlay controls (#4), elastic drag snap-back (#5).
+
 ---
 
 ## Phase N: Polish & Cross-Cutting Concerns
@@ -141,28 +156,54 @@
 - **Setup (Phase 1)**: Completed
 - **Foundational (Phase 2)**: Completed
 - **User Stories (Phase 3–6)**: Completed
-- **User Story 4 Multi-Layout Canvas (Phase 7.2)**: Ready to execute
+- **User Story 4 Sub-phase 7.1 (Force-Directed & Neon Theme)**: Completed
+- **User Story 4 Sub-phase 7.2 (Multi-Layout Unification)**: Completed
+- **User Story 4 Sub-phase 7.3 (Constrained Physics)**: Ready to execute
 - **Polish (Final Phase)**: Completed
 
-### User Story 4 (Sub-phase 7.2) Dependencies
+### Sub-phase 7.3 Dependencies
 
-- **T034 (Layout Engine Calculators)** and **T035 (Layout Unit Tests)** can proceed in parallel.
-- **T036 (Tweening & Layout Integration)** depends on T034.
-- **T037 (Physics Suspension)** and **T038 (Contextual Overlay Controls)** build on T036.
-- **T039 (GraphCanvas Unification)** depends on T036, T037, and T038.
-- **T040 (Multi-Layout Tests)** and **T041 (E2E Validation)** depend on T039.
+```
+T042 (SimNode anchorX/anchorY) ──┐
+                                 ├──► T044 (Render loop constrained physics)
+T043 (stepConstrainedPhysics) ───┘         │
+                                           ▼
+                                    T045 (Perpetual min alpha floor)
+                                           │
+                                           ▼
+                               ┌── T046 (Layout transition anchor setting)
+                               │── T047 (Data init anchor setting)
+                               │── T048 (Elastic drag snap-back)
+                               │── T049 (Reheat recomputation)
+                               └── T050 (Show controls in all layouts)
+                                           │
+                                           ▼
+                               ┌── T051 (Unit tests) [P]
+                               └── T052 (Integration tests) [P]
+                                           │
+                                           ▼
+                                    T053 (E2E validation)
+```
+
+- **T042** and **T043** can proceed in parallel (different concerns: data model vs physics function).
+- **T044** depends on both T042 and T043 (needs anchor fields and constrained physics function).
+- **T045** depends on T044 (modifies alpha cooling in the same render loop).
+- **T046**, **T047**, **T048**, **T049**, **T050** can proceed in parallel after T045 (each touches a distinct code section within `ForceGraphCanvas.tsx`).
+- **T051** and **T052** can proceed in parallel after T046-T050.
+- **T053** (E2E validation) depends on all implementation tasks being complete.
 
 ### Parallel Opportunities
 
-- `T034` (implementing `lib/layout-engine.ts`) and `T035` (`tests/layout-engine.test.ts`) can be authored together.
-- `T037` and `T038` touch complementary logic blocks within `components/graph/ForceGraphCanvas.tsx`.
+- `T042` (data model) and `T043` (physics function) can be authored together in `lib/force-simulation.ts`.
+- `T046` through `T050` touch distinct code sections within `ForceGraphCanvas.tsx` and can be authored as a single commit.
+- `T051` and `T052` can run in parallel (different test files).
 
 ---
 
 ## Implementation Strategy
 
-1. **Step 1: Layout Engine Geometry**: Extend `lib/layout-engine.ts` with layout calculators that return precise coordinates `(x, y)` for circular Canvas nodes (`SimNode[]`) across Dagre TB/LR, Grid, and Concentric Radial algorithms.
-2. **Step 2: Tweening & Physics Management**: Add coordinate tween state and smooth easing in `components/graph/ForceGraphCanvas.tsx`. Ensure physics steps run only when `layoutAlgorithm === 'force'`.
-3. **Step 3: Contextual Overlay Controls**: Conditionally render simulation buttons (Play/Pause, Reheat) only when in Force mode.
-4. **Step 4: Unify GraphCanvas**: Update `components/graph/GraphCanvas.tsx` so all layout algorithms route to the unified Canvas component.
-5. **Step 5: Testing & Validation**: Run Vitest test suite (`layout-engine.test.ts`, `canvas-multilayout.test.ts`) and validate all 5 layouts against `quickstart.md`.
+1. **Step 1: Physics Engine Extension**: Add `anchorX`/`anchorY` to `SimNode` and implement `stepConstrainedPhysics()` in `lib/force-simulation.ts` with anchor-spring (constant ~0.04), collision avoidance, and centering.
+2. **Step 2: Render Loop Integration**: Replace the physics-skip guard in `ForceGraphCanvas.tsx` with a call to `stepConstrainedPhysics()` for non-force layouts. Add perpetual minimum alpha floor (~0.015).
+3. **Step 3: Anchor Lifecycle Management**: Set `anchorX`/`anchorY` on layout transitions and data initialization; clear them when switching to force mode.
+4. **Step 4: Interaction Updates**: Implement elastic drag snap-back (clear fx/fy on release in constrained modes), reheat recomputation (re-run layout algorithm + re-anchor), and show simulation controls in all layouts.
+5. **Step 5: Testing & Validation**: Run unit tests for constrained physics, integration tests for control visibility and alpha floor, and E2E validation per `quickstart.md`.

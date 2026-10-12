@@ -10,10 +10,13 @@
 - **Rationale**: Dagre, Grid, and Concentric Radial layouts previously computed positions for fixed rectangular cards ($200 \times 70\text{px}$). Adapting the algorithms to use circular node dimensions ($r \approx 5.5 - 22\text{px}$) with appropriate node separation produces compact, aesthetically pleasing hierarchical and geometric diagrams.
 - **Alternatives Considered**: Keeping layout positions tied to React Flow node dimensions (caused excessive blank space and mismatched alignment).
 
-## 3. Positioning and Physics Behavior in Static Layouts
-- **Decision**: Deterministic static geometric placement with physics simulation disabled for Hierarchical, Grid, and Radial modes.
-- **Rationale**: Hierarchical and geometric layouts rely on strict spatial organization (ranks, rows, concentric rings). Running physics forces in these modes would pull nodes out of their designated slots. Users retain full camera pan and zoom, node hover, and selection capabilities.
-- **Alternatives Considered**: Relaxed spring simulation on top of Dagre ranks (distorted hierarchical tree levels).
+## 3. Positioning and Physics Behavior in Non-Force Layouts
+- **Decision**: Constrained spring physics anchoring nodes to their computed layout positions (Dagre/Grid/Radial coordinates act as gravitational attractors) with collision avoidance and gentle organic jitter.
+- **Rationale**: Rather than freezing nodes at fixed geometric positions, constrained anchor-spring physics creates a "living, breathing" graph effect across all layouts. Nodes settle near their geometric target (hierarchy ranks, grid rows, concentric rings) but exhibit subtle organic micro-movement, making the interface feel alive and responsive. The moderate anchor spring constant (~0.03-0.05) allows ~30-50px maximum drift, keeping the layout clearly recognizable while adding visual depth. A perpetual minimum alpha (~0.01-0.02) ensures the breathing effect never fully stops.
+- **Alternatives Considered**:
+  - Deterministic static placement with physics disabled (rejected — felt lifeless and static, no visual distinction from a static SVG diagram).
+  - Full unconstrained force-directed physics (rejected — would destroy hierarchical/grid/radial structural patterns).
+  - Hybrid warm-up: compute positions then run physics for 2-3 seconds before freezing (rejected — breathing stops abruptly, feels inconsistent).
 
 ## 4. Edge Routing Across Layouts
 - **Decision**: Straight directed vectors with arrowheads in Neon Blue (`#1f51ff`) for all layouts.
@@ -25,7 +28,24 @@
 - **Rationale**: Smoothly interpolating coordinates when switching layouts preserves the user's mental map of connected concepts and provides a fluid, polished user experience.
 - **Alternatives Considered**: Instant coordinate snapping (abrupt and disorienting).
 
-## 6. Contextual Canvas Overlay Controls
-- **Decision**: Conditionally hide physics simulation controls (Play/Pause, Reheat) in the top-right overlay when any static layout is selected.
-- **Rationale**: Prevents confusion since physics simulation does not apply to deterministic hierarchical, grid, or radial layouts. Controls for Zoom In, Zoom Out, Fit View, and Toggle Labels remain accessible across all modes.
-- **Alternatives Considered**: Showing disabled/greyed-out buttons with tooltips (adds visual noise).
+## 6. Canvas Overlay Controls
+- **Decision**: Show Play/Pause and Reheat simulation controls in all layout modes.
+- **Rationale**: Since continuous constrained physics runs in every layout, Play/Pause allows users to freeze the organic breathing and Reheat triggers a full re-layout computation. This provides consistent control surfaces regardless of active layout. Zoom In, Zoom Out, Fit View, and Toggle Labels remain accessible across all modes.
+- **Alternatives Considered**: Hiding physics controls in non-force layouts (rejected — now that physics runs everywhere, controls are relevant in all modes).
+
+## 7. Reheat Behavior in Constrained Layouts
+- **Decision**: Reheat re-computes layout coordinates first (re-running Dagre/Grid/Radial algorithms), then re-anchors all nodes to their new computed positions and resets alpha to 1.0 for a full re-cluster effect.
+- **Rationale**: A simple alpha reset without recomputation would only re-scatter nodes around their existing anchors. Re-computing ensures the layout adapts to any data changes (new/removed nodes from filter changes) and provides a visually satisfying "settle into formation" animation.
+- **Alternatives Considered**: Alpha-only reset (nodes would drift back to stale positions, not accounting for filter changes).
+
+## 8. Node Drag Interaction in Constrained Layouts
+- **Decision**: Elastic rubber band snap-back — while dragging, the node follows the cursor (fx/fy pinned); on release, the node snaps back toward its layout-computed position via the anchor spring.
+- **Rationale**: The elastic snap-back creates a playful, discoverable interaction that reinforces the constrained physics model. Users can explore node positions interactively while the layout's structural integrity self-restores.
+- **Alternatives Considered**:
+  - Permanent relocation (rejected — undermines layout structure, confusing when mixed with automatic re-layout on reheat).
+  - Disabled dragging (rejected — removes interactivity that users expect from the Organic layout).
+
+## 9. Perpetual Minimum Alpha for Organic Breathing
+- **Decision**: Maintain a perpetual minimum alpha (~0.01-0.02) so the constrained physics never fully cools to zero.
+- **Rationale**: A continuously breathing graph feels alive and premium. The subtle micro-movement differentiates the interactive Canvas visualization from static diagrams, encouraging exploration. The very low alpha floor ensures minimal computational overhead while keeping the animation loop running.
+- **Alternatives Considered**: Alpha cooling to zero with periodic auto-reheat pulses (rejected — rhythmic pulsing felt mechanical rather than organic).

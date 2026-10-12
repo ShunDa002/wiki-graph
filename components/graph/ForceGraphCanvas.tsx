@@ -9,6 +9,7 @@ import {
   SimEdge,
   initializeSimulationNodes,
   stepPhysicsSimulation,
+  stepConstrainedPhysics,
   shouldRenderNodeLabel,
   computeDegreeStats,
   getNeonNodeTheme,
@@ -69,6 +70,8 @@ export function ForceGraphCanvas({ graphData, onSelectNode }: ForceGraphCanvasPr
   const alphaRef = useRef<number>(1.0);
   const isSimRunningRef = useRef<boolean>(true);
   isSimRunningRef.current = isSimRunning;
+  const layoutAlgorithmRef = useRef(layoutAlgorithm);
+  layoutAlgorithmRef.current = layoutAlgorithm;
 
   // Viewport camera transform
   const transformRef = useRef({
@@ -105,6 +108,91 @@ export function ForceGraphCanvas({ graphData, onSelectNode }: ForceGraphCanvasPr
     return computeDegreeStats(degrees);
   }, [filteredNodes]);
 
+  // Fit View / Zoom to Fit (supports immediate positioning or smooth easing)
+  const handleFitView = useCallback((opts?: { immediate?: boolean } | boolean) => {
+    const immediate = typeof opts === 'boolean' ? opts : opts?.immediate ?? false;
+    const container = containerRef.current;
+    const nodes = simNodesRef.current;
+    if (!container || nodes.length === 0) return false;
+
+    const width = container.clientWidth;
+    const height = container.clientHeight;
+    if (width <= 0 || height <= 0) return false;
+
+    let minX = Infinity;
+    let maxX = -Infinity;
+    let minY = Infinity;
+    let maxY = -Infinity;
+
+    nodes.forEach((n) => {
+      minX = Math.min(minX, n.x - n.radius);
+      maxX = Math.max(maxX, n.x + n.radius);
+      minY = Math.min(minY, n.y - n.radius);
+      maxY = Math.max(maxY, n.y + n.radius);
+    });
+
+    const graphWidth = maxX - minX || 100;
+    const graphHeight = maxY - minY || 100;
+    const graphCenterX = (minX + maxX) / 2;
+    const graphCenterY = (minY + maxY) / 2;
+
+    const padding = 80;
+    const scaleX = (width - padding * 2) / graphWidth;
+    const scaleY = (height - padding * 2) / graphHeight;
+    const targetZoom = Math.min(1.8, Math.max(0.25, Math.min(scaleX, scaleY)));
+
+    const targetPanX = width / 2 - graphCenterX * targetZoom;
+    const targetPanY = height / 2 - graphCenterY * targetZoom;
+
+    if (immediate) {
+      transformRef.current.panX = targetPanX;
+      transformRef.current.panY = targetPanY;
+      transformRef.current.zoom = targetZoom;
+      return true;
+    }
+
+    // Smooth transition
+    const startPanX = transformRef.current.panX;
+    const startPanY = transformRef.current.panY;
+    const startZoom = transformRef.current.zoom;
+    const startTime = performance.now();
+    const duration = 400;
+
+    const step = (now: number) => {
+      const progress = Math.min(1, (now - startTime) / duration);
+      const ease = 1 - Math.pow(1 - progress, 3);
+
+      transformRef.current.panX = startPanX + (targetPanX - startPanX) * ease;
+      transformRef.current.panY = startPanY + (targetPanY - startPanY) * ease;
+      transformRef.current.zoom = startZoom + (targetZoom - startZoom) * ease;
+
+      if (progress < 1) {
+        requestAnimationFrame(step);
+      }
+    };
+    requestAnimationFrame(step);
+    return true;
+  }, []);
+
+  // Responsive resize observer ensuring accurate initial fit once container layout is resolved
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container || typeof ResizeObserver === 'undefined') return;
+
+    const ro = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        const { width, height } = entry.contentRect;
+        if (width > 0 && height > 0 && !isInitialCenteringDone.current && simNodesRef.current.length > 0) {
+          handleFitView(true);
+          isInitialCenteringDone.current = true;
+        }
+      }
+    });
+
+    ro.observe(container);
+    return () => ro.disconnect();
+  }, [handleFitView]);
+
   // 2. Build / Update Simulation Nodes and Edges when filtered data changes
   useEffect(() => {
     const container = containerRef.current;
@@ -124,40 +212,56 @@ export function ForceGraphCanvas({ graphData, onSelectNode }: ForceGraphCanvasPr
       existingMap
     );
 
-    // If active layout is static, apply computed layout coordinates directly
+    // If active layout is non-force, apply computed layout coordinates and anchor positions
     if (layoutAlgorithm !== 'force') {
       const posMap = computeCanvasLayout(simNodes, simEdges, layoutAlgorithm, { width, height });
       simNodes.forEach((node) => {
         const pos = posMap.get(node.id);
         if (pos) {
-          node.x = pos.x;
-          node.y = pos.y;
-          node.startX = pos.x;
-          node.startY = pos.y;
+          // If node was not already positioned in an existing simulation, set directly
+          if (!existingMap.has(node.id)) {
+            node.x = pos.x;
+            node.y = pos.y;
+            node.startX = pos.x;
+            node.startY = pos.y;
+          }
           node.targetX = pos.x;
           node.targetY = pos.y;
+          node.anchorX = pos.x;
+          node.anchorY = pos.y;
         }
         node.vx = 0;
         node.vy = 0;
       });
-    }
-
-    simNodesRef.current = simNodes;
-    simEdgesRef.current = simEdges;
-
-    // Reheat simulation only in force mode so new elements settle organically
-    if (layoutAlgorithm === 'force') {
+      // Initialize with active alpha for organic constrained breathing
+      alphaRef.current = 0.5;
+    } else {
+      simNodes.forEach((node) => {
+        node.anchorX = null;
+        node.anchorY = null;
+      });
       alphaRef.current = 0.8;
     }
 
-    // Initial fit view if first load
+    // Populate active simulation references for rendering and physics loop
+    simNodesRef.current = simNodes;
+    simEdgesRef.current = simEdges;
+
+    // Initial fit view if first load and nodes exist
     if (!isInitialCenteringDone.current && simNodes.length > 0) {
-      setTimeout(() => {
-        handleFitView();
+      if (container && container.clientWidth > 0 && container.clientHeight > 0) {
+        handleFitView(true);
         isInitialCenteringDone.current = true;
-      }, 60);
+      } else {
+        setTimeout(() => {
+          if (!isInitialCenteringDone.current && simNodesRef.current.length > 0) {
+            handleFitView(true);
+            isInitialCenteringDone.current = true;
+          }
+        }, 60);
+      }
     }
-  }, [filteredNodes, filteredEdges, layoutAlgorithm]);
+  }, [filteredNodes, filteredEdges, layoutAlgorithm, handleFitView]);
 
   // 2b. Handle layoutAlgorithm transitions with smooth 500-600ms coordinate tweening
   const prevLayoutRef = useRef(layoutAlgorithm);
@@ -175,13 +279,18 @@ export function ForceGraphCanvas({ graphData, onSelectNode }: ForceGraphCanvasPr
     if (simNodesRef.current.length === 0) return;
 
     if (layoutAlgorithm === 'force') {
+      // Clear anchor positions when entering unconstrained force layout
+      simNodesRef.current.forEach((node) => {
+        node.anchorX = null;
+        node.anchorY = null;
+      });
       // Reheat simulation so elements settle organically
       alphaRef.current = 0.8;
       setIsSimRunning(true);
       isTweeningRef.current = false;
       tweenStartTimeRef.current = null;
     } else {
-      // Compute deterministic target layout positions
+      // Compute deterministic target layout positions and set anchors for constrained physics
       const posMap = computeCanvasLayout(
         simNodesRef.current,
         simEdgesRef.current,
@@ -196,9 +305,13 @@ export function ForceGraphCanvas({ graphData, onSelectNode }: ForceGraphCanvasPr
         if (targetPos) {
           node.targetX = targetPos.x;
           node.targetY = targetPos.y;
+          node.anchorX = targetPos.x;
+          node.anchorY = targetPos.y;
         } else {
           node.targetX = node.x;
           node.targetY = node.y;
+          node.anchorX = node.x;
+          node.anchorY = node.y;
         }
         node.vx = 0;
         node.vy = 0;
@@ -270,61 +383,7 @@ export function ForceGraphCanvas({ graphData, onSelectNode }: ForceGraphCanvasPr
     return { selectedNeighbors: sNeighbors, hoveredNeighbors: hNeighbors };
   }, [selectedNodeId, hoveredNode, filteredEdges]);
 
-  // Fit View / Zoom to Fit
-  const handleFitView = useCallback(() => {
-    const container = containerRef.current;
-    const nodes = simNodesRef.current;
-    if (!container || nodes.length === 0) return;
 
-    const width = container.clientWidth;
-    const height = container.clientHeight;
-
-    let minX = Infinity;
-    let maxX = -Infinity;
-    let minY = Infinity;
-    let maxY = -Infinity;
-
-    nodes.forEach((n) => {
-      minX = Math.min(minX, n.x - n.radius);
-      maxX = Math.max(maxX, n.x + n.radius);
-      minY = Math.min(minY, n.y - n.radius);
-      maxY = Math.max(maxY, n.y + n.radius);
-    });
-
-    const graphWidth = maxX - minX || 100;
-    const graphHeight = maxY - minY || 100;
-    const graphCenterX = (minX + maxX) / 2;
-    const graphCenterY = (minY + maxY) / 2;
-
-    const padding = 80;
-    const scaleX = (width - padding * 2) / graphWidth;
-    const scaleY = (height - padding * 2) / graphHeight;
-    const targetZoom = Math.min(1.8, Math.max(0.25, Math.min(scaleX, scaleY)));
-
-    const targetPanX = width / 2 - graphCenterX * targetZoom;
-    const targetPanY = height / 2 - graphCenterY * targetZoom;
-
-    // Smooth transition
-    const startPanX = transformRef.current.panX;
-    const startPanY = transformRef.current.panY;
-    const startZoom = transformRef.current.zoom;
-    const startTime = performance.now();
-    const duration = 400;
-
-    const step = (now: number) => {
-      const progress = Math.min(1, (now - startTime) / duration);
-      const ease = 1 - Math.pow(1 - progress, 3);
-
-      transformRef.current.panX = startPanX + (targetPanX - startPanX) * ease;
-      transformRef.current.panY = startPanY + (targetPanY - startPanY) * ease;
-      transformRef.current.zoom = startZoom + (targetZoom - startZoom) * ease;
-
-      if (progress < 1) {
-        requestAnimationFrame(step);
-      }
-    };
-    requestAnimationFrame(step);
-  }, []);
 
   // Zoom Helpers
   const handleZoomIn = () => {
@@ -357,6 +416,28 @@ export function ForceGraphCanvas({ graphData, onSelectNode }: ForceGraphCanvasPr
 
   // Reheat / Re-cluster simulation
   const handleReheat = () => {
+    if (layoutAlgorithmRef.current !== 'force') {
+      const container = containerRef.current;
+      const width = container?.clientWidth || 1000;
+      const height = container?.clientHeight || 800;
+      const posMap = computeCanvasLayout(
+        simNodesRef.current,
+        simEdgesRef.current,
+        layoutAlgorithmRef.current,
+        { width, height }
+      );
+      simNodesRef.current.forEach((node) => {
+        const pos = posMap.get(node.id);
+        if (pos) {
+          node.anchorX = pos.x;
+          node.anchorY = pos.y;
+          node.x = pos.x;
+          node.y = pos.y;
+          node.vx = 0;
+          node.vy = 0;
+        }
+      });
+    }
     alphaRef.current = 1.0;
     setIsSimRunning(true);
   };
@@ -417,23 +498,54 @@ export function ForceGraphCanvas({ graphData, onSelectNode }: ForceGraphCanvasPr
         if (progress >= 1) {
           isTweeningRef.current = false;
           tweenStartTimeRef.current = null;
+          if (layoutAlgorithmRef.current !== 'force') {
+            simNodesRef.current.forEach((n) => {
+              if (
+                n.anchorX !== null &&
+                n.anchorX !== undefined &&
+                n.anchorY !== null &&
+                n.anchorY !== undefined
+              ) {
+                n.x = n.anchorX;
+                n.y = n.anchorY;
+                n.vx = 0;
+                n.vy = 0;
+              }
+            });
+            alphaRef.current = 0.015;
+          }
           handleFitView();
         }
       }
 
-      // Physics step: only execute when layoutAlgorithm === 'force' and not tweening
-      const isForceLayout = layoutAlgorithm === 'force';
-      if (isForceLayout && isSimRunningRef.current && alphaRef.current > 0.002 && !isTweeningRef.current) {
-        stepPhysicsSimulation(
-          simNodesRef.current,
-          simEdgesRef.current,
-          width,
-          height,
-          alphaRef.current,
-          DEFAULT_PHYSICS_PARAMS
-        );
-        // Gentle exponential cooling
-        alphaRef.current *= 0.992;
+      // Physics step: unconstrained in Organic mode, constrained spring physics in all other layouts
+      if (isSimRunningRef.current && !isTweeningRef.current) {
+        if (layoutAlgorithmRef.current === 'force') {
+          if (alphaRef.current > 0.002) {
+            stepPhysicsSimulation(
+              simNodesRef.current,
+              simEdgesRef.current,
+              width,
+              height,
+              alphaRef.current,
+              DEFAULT_PHYSICS_PARAMS
+            );
+            // Gentle exponential cooling
+            alphaRef.current *= 0.992;
+          }
+        } else {
+          // Constrained spring physics anchoring nodes to layout targets
+          stepConstrainedPhysics(
+            simNodesRef.current,
+            simEdgesRef.current,
+            width,
+            height,
+            alphaRef.current,
+            DEFAULT_PHYSICS_PARAMS
+          );
+          // Exponential cooling with perpetual minimum alpha floor (~0.015) for continuous organic breathing
+          alphaRef.current = Math.max(0.015, alphaRef.current * 0.992);
+        }
       }
 
       ctx.save();
@@ -846,9 +958,12 @@ export function ForceGraphCanvas({ graphData, onSelectNode }: ForceGraphCanvasPr
     const { worldX, worldY } = getCanvasCoords(e);
 
     if (draggedNodeRef.current) {
-      // Release fixed position gently so node continues settling
+      // Release fixed position: in constrained modes, clear fx/fy so anchor spring pulls node back (elastic rubber band)
       draggedNodeRef.current.fx = null;
       draggedNodeRef.current.fy = null;
+      if (layoutAlgorithmRef.current !== 'force') {
+        alphaRef.current = Math.max(alphaRef.current, 0.5);
+      }
       draggedNodeRef.current = null;
     }
 
@@ -929,38 +1044,34 @@ export function ForceGraphCanvas({ graphData, onSelectNode }: ForceGraphCanvasPr
             <ZoomOut className="w-4 h-4" />
           </button>
           <button
-            onClick={handleFitView}
+            onClick={() => handleFitView()}
             className="p-2 text-blue-300 hover:text-white hover:bg-blue-950/50 rounded-xl transition"
             title="Fit View / Reset Camera"
             aria-label="Fit View"
           >
             <Maximize2 className="w-4 h-4" />
           </button>
-          {/* Simulation controls: only visible during Force-Directed Organic layout */}
-          {layoutAlgorithm === 'force' && (
-            <>
-              <div className="w-[1px] h-4 bg-blue-900/50 mx-0.5" />
-              <button
-                onClick={() => setIsSimRunning(!isSimRunning)}
-                className={`p-2 rounded-xl transition ${isSimRunning
-                  ? 'text-[#1f51ff] hover:bg-blue-500/10'
-                  : 'text-neutral-500 hover:text-neutral-300 hover:bg-neutral-800/80'
-                  }`}
-                title={isSimRunning ? 'Pause Physics Simulation' : 'Resume Physics Simulation'}
-                aria-label="Toggle Physics Simulation"
-              >
-                {isSimRunning ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
-              </button>
-              <button
-                onClick={handleReheat}
-                className="p-2 text-[#ffe600] hover:text-yellow-300 hover:bg-yellow-500/10 rounded-xl transition"
-                title="Re-cluster / Re-heat Physics Simulation"
-                aria-label="Re-cluster Graph"
-              >
-                <Sparkles className="w-4 h-4" />
-              </button>
-            </>
-          )}
+          {/* Simulation controls: visible across all layout modes */}
+          <div className="w-[1px] h-4 bg-blue-900/50 mx-0.5" />
+          <button
+            onClick={() => setIsSimRunning(!isSimRunning)}
+            className={`p-2 rounded-xl transition ${isSimRunning
+              ? 'text-[#1f51ff] hover:bg-blue-500/10'
+              : 'text-neutral-500 hover:text-neutral-300 hover:bg-neutral-800/80'
+              }`}
+            title={isSimRunning ? 'Pause Physics Simulation' : 'Resume Physics Simulation'}
+            aria-label="Toggle Physics Simulation"
+          >
+            {isSimRunning ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+          </button>
+          <button
+            onClick={handleReheat}
+            className="p-2 text-[#ffe600] hover:text-yellow-300 hover:bg-yellow-500/10 rounded-xl transition"
+            title="Re-cluster / Re-heat Physics Simulation"
+            aria-label="Re-cluster Graph"
+          >
+            <Sparkles className="w-4 h-4" />
+          </button>
           <button
             onClick={() => setShowLabels(!showLabels)}
             className={`p-2 rounded-xl transition ${showLabels
@@ -1055,7 +1166,7 @@ export function ForceGraphCanvas({ graphData, onSelectNode }: ForceGraphCanvasPr
       })()}
 
       {/* Empty Filtered State indicator */}
-      {simNodesRef.current.length === 0 && (
+      {filteredNodes.length === 0 && (
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
           <div className="bg-[#0a1228]/85 backdrop-blur-md border border-cyan-900/40 px-6 py-4 rounded-2xl text-center shadow-xl">
             <p className="text-sm font-medium text-cyan-200">No notes match current filters</p>

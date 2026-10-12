@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-11T08:13:24.159Z",
+  "generatedAt": "2026-10-12T04:50:13.206Z",
   "metadata": {
     "nodeCount": 47,
     "edgeCount": 86,
@@ -27,234 +27,6 @@
       "aliases": [],
       "excerpt": "Append-only. Every completed write operation gets one entry. Newest at the bottom.",
       "outgoingCount": 0,
-      "incomingCount": 1,
-      "isOrphan": false
-    },
-    {
-      "id": "sources/Source - Agentic AI",
-      "title": "Source - Agentic AI",
-      "path": "sources/Source - Agentic AI.md",
-      "folder": "sources",
-      "tags": [],
-      "aliases": [],
-      "excerpt": "Notes covering the key characteristics and components of Agentic AI, as well as an overview of asynchronous programming concepts in Python.",
-      "outgoingCount": 2,
-      "incomingCount": 2,
-      "isOrphan": false
-    },
-    {
-      "id": "sources/Source - Antigravity Sandbox Setup",
-      "title": "Source - Antigravity Sandbox Setup",
-      "path": "sources/Source - Antigravity Sandbox Setup.md",
-      "folder": "sources",
-      "tags": [],
-      "aliases": [],
-      "excerpt": "A technical guide describing how to install, configure, and isolate the Antigravity CLI (agy) inside a Docker sbx sandbox environment.",
-      "outgoingCount": 1,
-      "incomingCount": 1,
-      "isOrphan": false
-    },
-    {
-      "id": "sources/Source - Application Programming Interfaces",
-      "title": "Source - Application Programming Interfaces",
-      "path": "sources/Source - Application Programming Interfaces.md",
-      "folder": "sources",
-      "tags": [],
-      "aliases": [],
-      "excerpt": "A conceptual overview of Application Programming Interfaces (APIs), highlighting the RESTful architectural paradigm.",
-      "outgoingCount": 1,
-      "incomingCount": 1,
-      "isOrphan": false
-    },
-    {
-      "id": "sources/Source - Async LangGraph Issues and Fixes",
-      "title": "Source - Async LangGraph Issues and Fixes",
-      "path": "sources/Source - Async LangGraph Issues and Fixes.md",
-      "folder": "sources",
-      "tags": [],
-      "aliases": [],
-      "excerpt": "An incident and troubleshooting log detailing various architecture and implementation fixes required to run a LangGraph agent asynchronously within a web API (FastAPI) environment.",
-      "outgoingCount": 2,
-      "incomingCount": 1,
-      "isOrphan": false
-    },
-    {
-      "id": "sources/Source - Claude Code Sandbox Setup",
-      "title": "Source - Claude Code Sandbox Setup",
-      "path": "sources/Source - Claude Code Sandbox Setup.md",
-      "folder": "sources",
-      "tags": [],
-      "aliases": [],
-      "excerpt": "A technical guide describing how to run, monitor, and provision the Claude Code agentic CLI inside a Docker sbx sandbox environment.",
-      "outgoingCount": 1,
-      "incomingCount": 1,
-      "isOrphan": false
-    },
-    {
-      "id": "sources/Source - FNM Windows Troubleshooting",
-      "title": "Source - FNM Windows Troubleshooting",
-      "path": "sources/Source - FNM Windows Troubleshooting.md",
-      "folder": "sources",
-      "tags": [],
-      "aliases": [],
-      "excerpt": "A troubleshooting summary detailing how to fix Fast Node Manager (FNM) shell initialization issues on Windows, particularly when OneDrive folder redirection breaks standard PowerShell profiles.",
-      "outgoingCount": 2,
-      "incomingCount": 2,
-      "isOrphan": false
-    },
-    {
-      "id": "sources/Source - LangGraph",
-      "title": "Source - LangGraph",
-      "path": "sources/Source - LangGraph.md",
-      "folder": "sources",
-      "tags": [],
-      "aliases": [],
-      "excerpt": "Notes describing the specific capabilities of LangGraph and how it solves the limitations of using LangChain alone for complex workflows.",
-      "outgoingCount": 2,
-      "incomingCount": 2,
-      "isOrphan": false
-    },
-    {
-      "id": "sources/Source - Langchain Ecosystem",
-      "title": "Source - Langchain Ecosystem",
-      "path": "sources/Source - Langchain Ecosystem.md",
-      "folder": "sources",
-      "tags": [],
-      "aliases": [],
-      "excerpt": "Notes covering three main components of the LangChain ecosystem: LangSmith, LangServe, and LangGraph.",
-      "outgoingCount": 3,
-      "incomingCount": 3,
-      "isOrphan": false
-    },
-    {
-      "id": "sources/Source - Linux Commands and Vim Operations",
-      "title": "Source - Linux Commands and Vim Operations",
-      "path": "sources/Source - Linux Commands and Vim Operations.md",
-      "folder": "sources",
-      "tags": [],
-      "aliases": [],
-      "excerpt": "A categorized cheat sheet covering fundamental Linux operations, including Multipass VM management, Vim text editing, basic filesystem navigation, file linking, and permission management.",
-      "outgoingCount": 4,
-      "incomingCount": 4,
-      "isOrphan": false
-    },
-    {
-      "id": "sources/Source - Object Oriented Programming (Python)",
-      "title": "Source - Object Oriented Programming (Python)",
-      "path": "sources/Source - Object Oriented Programming (Python).md",
-      "folder": "sources",
-      "tags": [],
-      "aliases": [],
-      "excerpt": "Notes covering the fundamentals of Object-Oriented Programming (OOP) in Python, focusing on class construction, object initialization, and data encapsulation compared to simpler data structures.",
-      "outgoingCount": 1,
-      "incomingCount": 1,
-      "isOrphan": false
-    },
-    {
-      "id": "sources/Source - Pydantic",
-      "title": "Source - Pydantic",
-      "path": "sources/Source - Pydantic.md",
-      "folder": "sources",
-      "tags": [],
-      "aliases": [],
-      "excerpt": "Notes covering the Pydantic library in Python, explaining its data validation capabilities, key features, and core implementations like validators, nested models, and serialization.",
-      "outgoingCount": 1,
-      "incomingCount": 1,
-      "isOrphan": false
-    },
-    {
-      "id": "sources/Source - Python File IO",
-      "title": "Source - Python File IO",
-      "path": "sources/Source - Python File IO.md",
-      "folder": "sources",
-      "tags": [],
-      "aliases": [],
-      "excerpt": "Notes covering the fundamentals of File I/O operations in Python, including the open() function, context management, and basic CSV parsing.",
-      "outgoingCount": 1,
-      "incomingCount": 1,
-      "isOrphan": false
-    },
-    {
-      "id": "sources/Source - Python Fundamentals",
-      "title": "Source - Python Fundamentals",
-      "path": "sources/Source - Python Fundamentals.md",
-      "folder": "sources",
-      "tags": [],
-      "aliases": [],
-      "excerpt": "An extensive primer on the Python programming language, covering its syntax, control flow, exception handling, built-in data structures, and module architecture.",
-      "outgoingCount": 3,
-      "incomingCount": 1,
-      "isOrphan": false
-    },
-    {
-      "id": "sources/Source - RAG",
-      "title": "Source - RAG",
-      "path": "sources/Source - RAG.md",
-      "folder": "sources",
-      "tags": [],
-      "aliases": [],
-      "excerpt": "A brief note summarizing the core motivations for using Retrieval-Augmented Generation (RAG).",
-      "outgoingCount": 1,
-      "incomingCount": 1,
-      "isOrphan": false
-    },
-    {
-      "id": "sources/Source - React Hooks Intro",
-      "title": "Source - React Hooks Intro",
-      "path": "sources/Source - React Hooks Intro.md",
-      "folder": "sources",
-      "tags": [],
-      "aliases": [],
-      "excerpt": "An introductory overview explaining the concept of React Hooks, detailing why they were introduced in React 16.8 and the primary problems they solve compared to class-based components.",
-      "outgoingCount": 1,
-      "incomingCount": 1,
-      "isOrphan": false
-    },
-    {
-      "id": "sources/Source - React useEffect Hook",
-      "title": "Source - React useEffect Hook",
-      "path": "sources/Source - React useEffect Hook.md",
-      "folder": "sources",
-      "tags": [],
-      "aliases": [],
-      "excerpt": "A technical note detailing the purpose and implementation patterns of the useEffect Hook in React.",
-      "outgoingCount": 2,
-      "incomingCount": 1,
-      "isOrphan": false
-    },
-    {
-      "id": "sources/Source - React useState Hook",
-      "title": "Source - React useState Hook",
-      "path": "sources/Source - React useState Hook.md",
-      "folder": "sources",
-      "tags": [],
-      "aliases": [],
-      "excerpt": "A technical note detailing the purpose and implementation patterns of the useState Hook in React.",
-      "outgoingCount": 2,
-      "incomingCount": 1,
-      "isOrphan": false
-    },
-    {
-      "id": "sources/Source - Tools",
-      "title": "Source - Tools",
-      "path": "sources/Source - Tools.md",
-      "folder": "sources",
-      "tags": [],
-      "aliases": [],
-      "excerpt": "Notes defining what tools are in the context of Agentic AI, listing common examples, and explaining the standard tool calling workflow.",
-      "outgoingCount": 2,
-      "incomingCount": 1,
-      "isOrphan": false
-    },
-    {
-      "id": "sources/Source - Unit Tests",
-      "title": "Source - Unit Tests",
-      "path": "sources/Source - Unit Tests.md",
-      "folder": "sources",
-      "tags": [],
-      "aliases": [],
-      "excerpt": "A very brief note highlighting the value of writing test code alongside program code.",
-      "outgoingCount": 1,
       "incomingCount": 1,
       "isOrphan": false
     },
@@ -718,6 +490,234 @@
       "outgoingCount": 2,
       "incomingCount": 2,
       "isOrphan": false
+    },
+    {
+      "id": "sources/Source - Agentic AI",
+      "title": "Source - Agentic AI",
+      "path": "sources/Source - Agentic AI.md",
+      "folder": "sources",
+      "tags": [],
+      "aliases": [],
+      "excerpt": "Notes covering the key characteristics and components of Agentic AI, as well as an overview of asynchronous programming concepts in Python.",
+      "outgoingCount": 2,
+      "incomingCount": 2,
+      "isOrphan": false
+    },
+    {
+      "id": "sources/Source - Antigravity Sandbox Setup",
+      "title": "Source - Antigravity Sandbox Setup",
+      "path": "sources/Source - Antigravity Sandbox Setup.md",
+      "folder": "sources",
+      "tags": [],
+      "aliases": [],
+      "excerpt": "A technical guide describing how to install, configure, and isolate the Antigravity CLI (agy) inside a Docker sbx sandbox environment.",
+      "outgoingCount": 1,
+      "incomingCount": 1,
+      "isOrphan": false
+    },
+    {
+      "id": "sources/Source - Application Programming Interfaces",
+      "title": "Source - Application Programming Interfaces",
+      "path": "sources/Source - Application Programming Interfaces.md",
+      "folder": "sources",
+      "tags": [],
+      "aliases": [],
+      "excerpt": "A conceptual overview of Application Programming Interfaces (APIs), highlighting the RESTful architectural paradigm.",
+      "outgoingCount": 1,
+      "incomingCount": 1,
+      "isOrphan": false
+    },
+    {
+      "id": "sources/Source - Async LangGraph Issues and Fixes",
+      "title": "Source - Async LangGraph Issues and Fixes",
+      "path": "sources/Source - Async LangGraph Issues and Fixes.md",
+      "folder": "sources",
+      "tags": [],
+      "aliases": [],
+      "excerpt": "An incident and troubleshooting log detailing various architecture and implementation fixes required to run a LangGraph agent asynchronously within a web API (FastAPI) environment.",
+      "outgoingCount": 2,
+      "incomingCount": 1,
+      "isOrphan": false
+    },
+    {
+      "id": "sources/Source - Claude Code Sandbox Setup",
+      "title": "Source - Claude Code Sandbox Setup",
+      "path": "sources/Source - Claude Code Sandbox Setup.md",
+      "folder": "sources",
+      "tags": [],
+      "aliases": [],
+      "excerpt": "A technical guide describing how to run, monitor, and provision the Claude Code agentic CLI inside a Docker sbx sandbox environment.",
+      "outgoingCount": 1,
+      "incomingCount": 1,
+      "isOrphan": false
+    },
+    {
+      "id": "sources/Source - FNM Windows Troubleshooting",
+      "title": "Source - FNM Windows Troubleshooting",
+      "path": "sources/Source - FNM Windows Troubleshooting.md",
+      "folder": "sources",
+      "tags": [],
+      "aliases": [],
+      "excerpt": "A troubleshooting summary detailing how to fix Fast Node Manager (FNM) shell initialization issues on Windows, particularly when OneDrive folder redirection breaks standard PowerShell profiles.",
+      "outgoingCount": 2,
+      "incomingCount": 2,
+      "isOrphan": false
+    },
+    {
+      "id": "sources/Source - LangGraph",
+      "title": "Source - LangGraph",
+      "path": "sources/Source - LangGraph.md",
+      "folder": "sources",
+      "tags": [],
+      "aliases": [],
+      "excerpt": "Notes describing the specific capabilities of LangGraph and how it solves the limitations of using LangChain alone for complex workflows.",
+      "outgoingCount": 2,
+      "incomingCount": 2,
+      "isOrphan": false
+    },
+    {
+      "id": "sources/Source - Langchain Ecosystem",
+      "title": "Source - Langchain Ecosystem",
+      "path": "sources/Source - Langchain Ecosystem.md",
+      "folder": "sources",
+      "tags": [],
+      "aliases": [],
+      "excerpt": "Notes covering three main components of the LangChain ecosystem: LangSmith, LangServe, and LangGraph.",
+      "outgoingCount": 3,
+      "incomingCount": 3,
+      "isOrphan": false
+    },
+    {
+      "id": "sources/Source - Linux Commands and Vim Operations",
+      "title": "Source - Linux Commands and Vim Operations",
+      "path": "sources/Source - Linux Commands and Vim Operations.md",
+      "folder": "sources",
+      "tags": [],
+      "aliases": [],
+      "excerpt": "A categorized cheat sheet covering fundamental Linux operations, including Multipass VM management, Vim text editing, basic filesystem navigation, file linking, and permission management.",
+      "outgoingCount": 4,
+      "incomingCount": 4,
+      "isOrphan": false
+    },
+    {
+      "id": "sources/Source - Object Oriented Programming (Python)",
+      "title": "Source - Object Oriented Programming (Python)",
+      "path": "sources/Source - Object Oriented Programming (Python).md",
+      "folder": "sources",
+      "tags": [],
+      "aliases": [],
+      "excerpt": "Notes covering the fundamentals of Object-Oriented Programming (OOP) in Python, focusing on class construction, object initialization, and data encapsulation compared to simpler data structures.",
+      "outgoingCount": 1,
+      "incomingCount": 1,
+      "isOrphan": false
+    },
+    {
+      "id": "sources/Source - Pydantic",
+      "title": "Source - Pydantic",
+      "path": "sources/Source - Pydantic.md",
+      "folder": "sources",
+      "tags": [],
+      "aliases": [],
+      "excerpt": "Notes covering the Pydantic library in Python, explaining its data validation capabilities, key features, and core implementations like validators, nested models, and serialization.",
+      "outgoingCount": 1,
+      "incomingCount": 1,
+      "isOrphan": false
+    },
+    {
+      "id": "sources/Source - Python File IO",
+      "title": "Source - Python File IO",
+      "path": "sources/Source - Python File IO.md",
+      "folder": "sources",
+      "tags": [],
+      "aliases": [],
+      "excerpt": "Notes covering the fundamentals of File I/O operations in Python, including the open() function, context management, and basic CSV parsing.",
+      "outgoingCount": 1,
+      "incomingCount": 1,
+      "isOrphan": false
+    },
+    {
+      "id": "sources/Source - Python Fundamentals",
+      "title": "Source - Python Fundamentals",
+      "path": "sources/Source - Python Fundamentals.md",
+      "folder": "sources",
+      "tags": [],
+      "aliases": [],
+      "excerpt": "An extensive primer on the Python programming language, covering its syntax, control flow, exception handling, built-in data structures, and module architecture.",
+      "outgoingCount": 3,
+      "incomingCount": 1,
+      "isOrphan": false
+    },
+    {
+      "id": "sources/Source - RAG",
+      "title": "Source - RAG",
+      "path": "sources/Source - RAG.md",
+      "folder": "sources",
+      "tags": [],
+      "aliases": [],
+      "excerpt": "A brief note summarizing the core motivations for using Retrieval-Augmented Generation (RAG).",
+      "outgoingCount": 1,
+      "incomingCount": 1,
+      "isOrphan": false
+    },
+    {
+      "id": "sources/Source - React Hooks Intro",
+      "title": "Source - React Hooks Intro",
+      "path": "sources/Source - React Hooks Intro.md",
+      "folder": "sources",
+      "tags": [],
+      "aliases": [],
+      "excerpt": "An introductory overview explaining the concept of React Hooks, detailing why they were introduced in React 16.8 and the primary problems they solve compared to class-based components.",
+      "outgoingCount": 1,
+      "incomingCount": 1,
+      "isOrphan": false
+    },
+    {
+      "id": "sources/Source - React useEffect Hook",
+      "title": "Source - React useEffect Hook",
+      "path": "sources/Source - React useEffect Hook.md",
+      "folder": "sources",
+      "tags": [],
+      "aliases": [],
+      "excerpt": "A technical note detailing the purpose and implementation patterns of the useEffect Hook in React.",
+      "outgoingCount": 2,
+      "incomingCount": 1,
+      "isOrphan": false
+    },
+    {
+      "id": "sources/Source - React useState Hook",
+      "title": "Source - React useState Hook",
+      "path": "sources/Source - React useState Hook.md",
+      "folder": "sources",
+      "tags": [],
+      "aliases": [],
+      "excerpt": "A technical note detailing the purpose and implementation patterns of the useState Hook in React.",
+      "outgoingCount": 2,
+      "incomingCount": 1,
+      "isOrphan": false
+    },
+    {
+      "id": "sources/Source - Tools",
+      "title": "Source - Tools",
+      "path": "sources/Source - Tools.md",
+      "folder": "sources",
+      "tags": [],
+      "aliases": [],
+      "excerpt": "Notes defining what tools are in the context of Agentic AI, listing common examples, and explaining the standard tool calling workflow.",
+      "outgoingCount": 2,
+      "incomingCount": 1,
+      "isOrphan": false
+    },
+    {
+      "id": "sources/Source - Unit Tests",
+      "title": "Source - Unit Tests",
+      "path": "sources/Source - Unit Tests.md",
+      "folder": "sources",
+      "tags": [],
+      "aliases": [],
+      "excerpt": "A very brief note highlighting the value of writing test code alongside program code.",
+      "outgoingCount": 1,
+      "incomingCount": 1,
+      "isOrphan": false
     }
   ],
   "edges": [
@@ -725,204 +725,6 @@
       "id": "index->log",
       "source": "index",
       "target": "log",
-      "type": "wikilink"
-    },
-    {
-      "id": "sources/Source - Agentic AI->concepts/Agentic AI",
-      "source": "sources/Source - Agentic AI",
-      "target": "concepts/Agentic AI",
-      "type": "wikilink"
-    },
-    {
-      "id": "sources/Source - Agentic AI->concepts/Asynchronous Programming",
-      "source": "sources/Source - Agentic AI",
-      "target": "concepts/Asynchronous Programming",
-      "type": "wikilink"
-    },
-    {
-      "id": "sources/Source - Antigravity Sandbox Setup->concepts/Antigravity Sandbox Isolation",
-      "source": "sources/Source - Antigravity Sandbox Setup",
-      "target": "concepts/Antigravity Sandbox Isolation",
-      "type": "wikilink"
-    },
-    {
-      "id": "sources/Source - Application Programming Interfaces->concepts/Application Programming Interface (API)",
-      "source": "sources/Source - Application Programming Interfaces",
-      "target": "concepts/Application Programming Interface (API)",
-      "type": "wikilink"
-    },
-    {
-      "id": "sources/Source - Async LangGraph Issues and Fixes->concepts/LangGraph Async Execution",
-      "source": "sources/Source - Async LangGraph Issues and Fixes",
-      "target": "concepts/LangGraph Async Execution",
-      "type": "wikilink"
-    },
-    {
-      "id": "sources/Source - Async LangGraph Issues and Fixes->concepts/LangGraph",
-      "source": "sources/Source - Async LangGraph Issues and Fixes",
-      "target": "concepts/LangGraph",
-      "type": "wikilink"
-    },
-    {
-      "id": "sources/Source - Claude Code Sandbox Setup->concepts/Claude Code Sandbox Execution",
-      "source": "sources/Source - Claude Code Sandbox Setup",
-      "target": "concepts/Claude Code Sandbox Execution",
-      "type": "wikilink"
-    },
-    {
-      "id": "sources/Source - FNM Windows Troubleshooting->concepts/Fast Node Manager (FNM) Windows Initialization",
-      "source": "sources/Source - FNM Windows Troubleshooting",
-      "target": "concepts/Fast Node Manager (FNM) Windows Initialization",
-      "type": "wikilink"
-    },
-    {
-      "id": "sources/Source - FNM Windows Troubleshooting->concepts/npx Execution on Windows",
-      "source": "sources/Source - FNM Windows Troubleshooting",
-      "target": "concepts/npx Execution on Windows",
-      "type": "wikilink"
-    },
-    {
-      "id": "sources/Source - LangGraph->concepts/LangChain",
-      "source": "sources/Source - LangGraph",
-      "target": "concepts/LangChain",
-      "type": "wikilink"
-    },
-    {
-      "id": "sources/Source - LangGraph->concepts/LangGraph",
-      "source": "sources/Source - LangGraph",
-      "target": "concepts/LangGraph",
-      "type": "wikilink"
-    },
-    {
-      "id": "sources/Source - Langchain Ecosystem->concepts/LangSmith",
-      "source": "sources/Source - Langchain Ecosystem",
-      "target": "concepts/LangSmith",
-      "type": "wikilink"
-    },
-    {
-      "id": "sources/Source - Langchain Ecosystem->concepts/LangServe",
-      "source": "sources/Source - Langchain Ecosystem",
-      "target": "concepts/LangServe",
-      "type": "wikilink"
-    },
-    {
-      "id": "sources/Source - Langchain Ecosystem->concepts/LangGraph",
-      "source": "sources/Source - Langchain Ecosystem",
-      "target": "concepts/LangGraph",
-      "type": "wikilink"
-    },
-    {
-      "id": "sources/Source - Linux Commands and Vim Operations->concepts/Linux Basics",
-      "source": "sources/Source - Linux Commands and Vim Operations",
-      "target": "concepts/Linux Basics",
-      "type": "wikilink"
-    },
-    {
-      "id": "sources/Source - Linux Commands and Vim Operations->concepts/Vim (Text Editor)",
-      "source": "sources/Source - Linux Commands and Vim Operations",
-      "target": "concepts/Vim (Text Editor)",
-      "type": "wikilink"
-    },
-    {
-      "id": "sources/Source - Linux Commands and Vim Operations->concepts/Multipass",
-      "source": "sources/Source - Linux Commands and Vim Operations",
-      "target": "concepts/Multipass",
-      "type": "wikilink"
-    },
-    {
-      "id": "sources/Source - Linux Commands and Vim Operations->concepts/Hard vs Soft Links (Linux)",
-      "source": "sources/Source - Linux Commands and Vim Operations",
-      "target": "concepts/Hard vs Soft Links (Linux)",
-      "type": "wikilink"
-    },
-    {
-      "id": "sources/Source - Object Oriented Programming (Python)->concepts/Object Oriented Programming (Python)",
-      "source": "sources/Source - Object Oriented Programming (Python)",
-      "target": "concepts/Object Oriented Programming (Python)",
-      "type": "wikilink"
-    },
-    {
-      "id": "sources/Source - Pydantic->concepts/Pydantic",
-      "source": "sources/Source - Pydantic",
-      "target": "concepts/Pydantic",
-      "type": "wikilink"
-    },
-    {
-      "id": "sources/Source - Python File IO->concepts/File IO (Python)",
-      "source": "sources/Source - Python File IO",
-      "target": "concepts/File IO (Python)",
-      "type": "wikilink"
-    },
-    {
-      "id": "sources/Source - Python Fundamentals->concepts/Python (Programming Language)",
-      "source": "sources/Source - Python Fundamentals",
-      "target": "concepts/Python (Programming Language)",
-      "type": "wikilink"
-    },
-    {
-      "id": "sources/Source - Python Fundamentals->concepts/File IO (Python)",
-      "source": "sources/Source - Python Fundamentals",
-      "target": "concepts/File IO (Python)",
-      "type": "wikilink"
-    },
-    {
-      "id": "sources/Source - Python Fundamentals->concepts/Object Oriented Programming (Python)",
-      "source": "sources/Source - Python Fundamentals",
-      "target": "concepts/Object Oriented Programming (Python)",
-      "type": "wikilink"
-    },
-    {
-      "id": "sources/Source - RAG->concepts/Retrieval-Augmented Generation",
-      "source": "sources/Source - RAG",
-      "target": "concepts/Retrieval-Augmented Generation",
-      "type": "wikilink"
-    },
-    {
-      "id": "sources/Source - React Hooks Intro->concepts/React Hooks",
-      "source": "sources/Source - React Hooks Intro",
-      "target": "concepts/React Hooks",
-      "type": "wikilink"
-    },
-    {
-      "id": "sources/Source - React useEffect Hook->concepts/useEffect (React)",
-      "source": "sources/Source - React useEffect Hook",
-      "target": "concepts/useEffect (React)",
-      "type": "wikilink"
-    },
-    {
-      "id": "sources/Source - React useEffect Hook->concepts/React Hooks",
-      "source": "sources/Source - React useEffect Hook",
-      "target": "concepts/React Hooks",
-      "type": "wikilink"
-    },
-    {
-      "id": "sources/Source - React useState Hook->concepts/useState (React)",
-      "source": "sources/Source - React useState Hook",
-      "target": "concepts/useState (React)",
-      "type": "wikilink"
-    },
-    {
-      "id": "sources/Source - React useState Hook->concepts/React Hooks",
-      "source": "sources/Source - React useState Hook",
-      "target": "concepts/React Hooks",
-      "type": "wikilink"
-    },
-    {
-      "id": "sources/Source - Tools->concepts/Tool",
-      "source": "sources/Source - Tools",
-      "target": "concepts/Tool",
-      "type": "wikilink"
-    },
-    {
-      "id": "sources/Source - Tools->concepts/Agentic AI",
-      "source": "sources/Source - Tools",
-      "target": "concepts/Agentic AI",
-      "type": "wikilink"
-    },
-    {
-      "id": "sources/Source - Unit Tests->concepts/Unit Testing (Python)",
-      "source": "sources/Source - Unit Tests",
-      "target": "concepts/Unit Testing (Python)",
       "type": "wikilink"
     },
     {
@@ -1235,6 +1037,204 @@
       "id": "concepts/useState (React)->concepts/React Hooks",
       "source": "concepts/useState (React)",
       "target": "concepts/React Hooks",
+      "type": "wikilink"
+    },
+    {
+      "id": "sources/Source - Agentic AI->concepts/Agentic AI",
+      "source": "sources/Source - Agentic AI",
+      "target": "concepts/Agentic AI",
+      "type": "wikilink"
+    },
+    {
+      "id": "sources/Source - Agentic AI->concepts/Asynchronous Programming",
+      "source": "sources/Source - Agentic AI",
+      "target": "concepts/Asynchronous Programming",
+      "type": "wikilink"
+    },
+    {
+      "id": "sources/Source - Antigravity Sandbox Setup->concepts/Antigravity Sandbox Isolation",
+      "source": "sources/Source - Antigravity Sandbox Setup",
+      "target": "concepts/Antigravity Sandbox Isolation",
+      "type": "wikilink"
+    },
+    {
+      "id": "sources/Source - Application Programming Interfaces->concepts/Application Programming Interface (API)",
+      "source": "sources/Source - Application Programming Interfaces",
+      "target": "concepts/Application Programming Interface (API)",
+      "type": "wikilink"
+    },
+    {
+      "id": "sources/Source - Async LangGraph Issues and Fixes->concepts/LangGraph Async Execution",
+      "source": "sources/Source - Async LangGraph Issues and Fixes",
+      "target": "concepts/LangGraph Async Execution",
+      "type": "wikilink"
+    },
+    {
+      "id": "sources/Source - Async LangGraph Issues and Fixes->concepts/LangGraph",
+      "source": "sources/Source - Async LangGraph Issues and Fixes",
+      "target": "concepts/LangGraph",
+      "type": "wikilink"
+    },
+    {
+      "id": "sources/Source - Claude Code Sandbox Setup->concepts/Claude Code Sandbox Execution",
+      "source": "sources/Source - Claude Code Sandbox Setup",
+      "target": "concepts/Claude Code Sandbox Execution",
+      "type": "wikilink"
+    },
+    {
+      "id": "sources/Source - FNM Windows Troubleshooting->concepts/Fast Node Manager (FNM) Windows Initialization",
+      "source": "sources/Source - FNM Windows Troubleshooting",
+      "target": "concepts/Fast Node Manager (FNM) Windows Initialization",
+      "type": "wikilink"
+    },
+    {
+      "id": "sources/Source - FNM Windows Troubleshooting->concepts/npx Execution on Windows",
+      "source": "sources/Source - FNM Windows Troubleshooting",
+      "target": "concepts/npx Execution on Windows",
+      "type": "wikilink"
+    },
+    {
+      "id": "sources/Source - LangGraph->concepts/LangChain",
+      "source": "sources/Source - LangGraph",
+      "target": "concepts/LangChain",
+      "type": "wikilink"
+    },
+    {
+      "id": "sources/Source - LangGraph->concepts/LangGraph",
+      "source": "sources/Source - LangGraph",
+      "target": "concepts/LangGraph",
+      "type": "wikilink"
+    },
+    {
+      "id": "sources/Source - Langchain Ecosystem->concepts/LangSmith",
+      "source": "sources/Source - Langchain Ecosystem",
+      "target": "concepts/LangSmith",
+      "type": "wikilink"
+    },
+    {
+      "id": "sources/Source - Langchain Ecosystem->concepts/LangServe",
+      "source": "sources/Source - Langchain Ecosystem",
+      "target": "concepts/LangServe",
+      "type": "wikilink"
+    },
+    {
+      "id": "sources/Source - Langchain Ecosystem->concepts/LangGraph",
+      "source": "sources/Source - Langchain Ecosystem",
+      "target": "concepts/LangGraph",
+      "type": "wikilink"
+    },
+    {
+      "id": "sources/Source - Linux Commands and Vim Operations->concepts/Linux Basics",
+      "source": "sources/Source - Linux Commands and Vim Operations",
+      "target": "concepts/Linux Basics",
+      "type": "wikilink"
+    },
+    {
+      "id": "sources/Source - Linux Commands and Vim Operations->concepts/Vim (Text Editor)",
+      "source": "sources/Source - Linux Commands and Vim Operations",
+      "target": "concepts/Vim (Text Editor)",
+      "type": "wikilink"
+    },
+    {
+      "id": "sources/Source - Linux Commands and Vim Operations->concepts/Multipass",
+      "source": "sources/Source - Linux Commands and Vim Operations",
+      "target": "concepts/Multipass",
+      "type": "wikilink"
+    },
+    {
+      "id": "sources/Source - Linux Commands and Vim Operations->concepts/Hard vs Soft Links (Linux)",
+      "source": "sources/Source - Linux Commands and Vim Operations",
+      "target": "concepts/Hard vs Soft Links (Linux)",
+      "type": "wikilink"
+    },
+    {
+      "id": "sources/Source - Object Oriented Programming (Python)->concepts/Object Oriented Programming (Python)",
+      "source": "sources/Source - Object Oriented Programming (Python)",
+      "target": "concepts/Object Oriented Programming (Python)",
+      "type": "wikilink"
+    },
+    {
+      "id": "sources/Source - Pydantic->concepts/Pydantic",
+      "source": "sources/Source - Pydantic",
+      "target": "concepts/Pydantic",
+      "type": "wikilink"
+    },
+    {
+      "id": "sources/Source - Python File IO->concepts/File IO (Python)",
+      "source": "sources/Source - Python File IO",
+      "target": "concepts/File IO (Python)",
+      "type": "wikilink"
+    },
+    {
+      "id": "sources/Source - Python Fundamentals->concepts/Python (Programming Language)",
+      "source": "sources/Source - Python Fundamentals",
+      "target": "concepts/Python (Programming Language)",
+      "type": "wikilink"
+    },
+    {
+      "id": "sources/Source - Python Fundamentals->concepts/File IO (Python)",
+      "source": "sources/Source - Python Fundamentals",
+      "target": "concepts/File IO (Python)",
+      "type": "wikilink"
+    },
+    {
+      "id": "sources/Source - Python Fundamentals->concepts/Object Oriented Programming (Python)",
+      "source": "sources/Source - Python Fundamentals",
+      "target": "concepts/Object Oriented Programming (Python)",
+      "type": "wikilink"
+    },
+    {
+      "id": "sources/Source - RAG->concepts/Retrieval-Augmented Generation",
+      "source": "sources/Source - RAG",
+      "target": "concepts/Retrieval-Augmented Generation",
+      "type": "wikilink"
+    },
+    {
+      "id": "sources/Source - React Hooks Intro->concepts/React Hooks",
+      "source": "sources/Source - React Hooks Intro",
+      "target": "concepts/React Hooks",
+      "type": "wikilink"
+    },
+    {
+      "id": "sources/Source - React useEffect Hook->concepts/useEffect (React)",
+      "source": "sources/Source - React useEffect Hook",
+      "target": "concepts/useEffect (React)",
+      "type": "wikilink"
+    },
+    {
+      "id": "sources/Source - React useEffect Hook->concepts/React Hooks",
+      "source": "sources/Source - React useEffect Hook",
+      "target": "concepts/React Hooks",
+      "type": "wikilink"
+    },
+    {
+      "id": "sources/Source - React useState Hook->concepts/useState (React)",
+      "source": "sources/Source - React useState Hook",
+      "target": "concepts/useState (React)",
+      "type": "wikilink"
+    },
+    {
+      "id": "sources/Source - React useState Hook->concepts/React Hooks",
+      "source": "sources/Source - React useState Hook",
+      "target": "concepts/React Hooks",
+      "type": "wikilink"
+    },
+    {
+      "id": "sources/Source - Tools->concepts/Tool",
+      "source": "sources/Source - Tools",
+      "target": "concepts/Tool",
+      "type": "wikilink"
+    },
+    {
+      "id": "sources/Source - Tools->concepts/Agentic AI",
+      "source": "sources/Source - Tools",
+      "target": "concepts/Agentic AI",
+      "type": "wikilink"
+    },
+    {
+      "id": "sources/Source - Unit Tests->concepts/Unit Testing (Python)",
+      "source": "sources/Source - Unit Tests",
+      "target": "concepts/Unit Testing (Python)",
       "type": "wikilink"
     }
   ]

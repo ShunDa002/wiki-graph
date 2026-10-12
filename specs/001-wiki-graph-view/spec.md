@@ -24,10 +24,17 @@
 
 ### Session 2026-10-11
 - Q: How should all graph layouts (Hierarchical, Grid, Radial) be unified with the Force-Directed (Organic) visual design? → A: Migrate all layouts into the unified HTML5 Canvas engine so every layout shares identical neon aesthetics, circular nodes, glowing links, and 60fps performance.
-- Q: How should node positioning and physics behave in Hierarchical, Grid, and Radial layouts? → A: Fixed geometric positioning without physics forces, preserving strict hierarchy, rows, or concentric rings while allowing camera pan, zoom, and node interaction.
+- Q: How should node positioning and physics behave in Hierarchical, Grid, and Radial layouts? → A: ~~Fixed geometric positioning without physics forces~~ (Superseded 2026-10-11) → Constrained spring physics anchoring nodes to their computed layout positions (Dagre/Grid/Radial coordinates act as gravitational attractors) with collision avoidance and gentle organic jitter; nodes settle near their geometric target but breathe and respond to interaction.
 - Q: How should edge links be rendered in Hierarchical (Top-Down and Left-Right) layouts? → A: Straight directed vectors with arrowheads, maintaining identical glowing neon link styles and high performance across all layouts.
 - Q: When switching between layouts, how should node positions and the camera transition? → A: Smoothly animate (tween) node positions over 500-600ms to their new coordinates and smoothly fit the camera view to the layout bounds.
-- Q: How should the canvas overlay controls handle simulation buttons (Play/Pause, Reheat) in static layouts? → A: Hide the physics controls (Play/Pause, Reheat) in static layouts, leaving Zoom, Fit View, and Label toggles with clean, relevant UI.
+- Q: How should the canvas overlay controls handle simulation buttons (Play/Pause, Reheat) in static layouts? → A: ~~Hide the physics controls (Play/Pause, Reheat) in static layouts~~ (Superseded 2026-10-11) → Show Play/Pause and Reheat controls in all layouts since continuous constrained physics runs everywhere.
+
+### Session 2026-10-11 (Continued)
+- Q: How should continuous physics interact with the geometric structure of non-force layouts (Hierarchical, Grid, Radial)? → A: Constrained spring physics that anchors nodes to their computed layout positions (Dagre/Grid/Radial coordinates act as gravitational attractors) while adding collision avoidance and gentle organic jitter — nodes settle near their geometric target but breathe and respond to interaction.
+- Q: How strong should the anchor spring force be that pulls nodes back to their computed layout positions in non-force layouts? → A: Moderate anchor strength (~0.03-0.05 spring constant) so nodes gently drift up to ~30-50px from their layout position, creating a visible organic breathing effect while keeping the layout clearly recognizable.
+- Q: When the user clicks "Reheat" in a non-force layout, should it recompute layout positions or only reset the physics alpha? → A: Reheat re-computes layout coordinates first (re-running Dagre/Grid/Radial algorithms), then re-anchors all nodes to their new computed positions and resets alpha to 1.0 — achieving a full re-cluster effect within the structural layout.
+- Q: Should the constrained physics simulation in non-force layouts cool down to zero alpha or maintain a perpetual minimum alpha for continuous organic breathing? → A: Maintain a perpetual minimum alpha (~0.01-0.02) so the constrained physics never fully stops — nodes exhibit subtle continuous breathing and organic micro-movement indefinitely, keeping the graph feeling alive.
+- Q: When a user drags a node in a non-force layout, should the node snap back to its computed layout position after release or permanently stay at the dragged position? → A: Temporarily override the anchor — while dragging, the node follows the cursor (fx/fy pinned); on release, the node snaps back toward its layout-computed position via the anchor spring, creating a satisfying elastic rubber band effect.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -118,19 +125,22 @@ As a user, I want all graph layout views (Force-Directed Organic, Hierarchical T
 - **FR-012**: System MUST display a "Service Unavailable" error state with a manual retry button if the backend is unavailable and no cache exists.
 - **FR-013**: System MUST block rendering and display a compatibility error if the backend returns an unsupported `schemaVersion`.
 - **FR-014**: The frontend MUST NOT expose a rebuild button; graph rebuilds MUST be triggered exclusively via external CI/webhook to the backend.
-- **FR-015**: System MUST implement a unified 60fps HTML5 Canvas engine rendering all layouts with degree centrality scaling (leaf notes 5.5-7px, hubs 18-22px), utilizing physics simulation for Organic mode and deterministic fixed geometric coordinates without physics displacement for Hierarchical, Grid, and Radial modes.
+- **FR-015**: System MUST implement a unified 60fps HTML5 Canvas engine rendering all layouts with degree centrality scaling (leaf notes 5.5-7px, hubs 18-22px), utilizing unconstrained force-directed physics for Organic mode and constrained spring physics (anchored to computed layout positions with collision avoidance and organic jitter, anchor spring constant ~0.03-0.05, max drift ~30-50px) for Hierarchical, Grid, and Radial modes.
 - **FR-016**: System MUST render the visualization on a Deep Navy backdrop (`#060b18`) with ambient midnight-blue radial glow and faint constellation lattice.
 - **FR-017**: System MUST render nodes as pure, flat solid color discs without radial gradients ("radiant"), categorized into Electric Cyan hubs (`#00f0ff`), Magenta concepts (`#ff2a85`), Neon Yellow sources (`#ffe600`), Pale Blue leaf notes (`#38bdf8`), and Neon Amber orphans (`#fb923c`).
 - **FR-018**: System MUST render all node selection, node hover, connected neighbor rings, and active edge link effects as straight directed vectors with arrowheads in high-contrast Neon Blue (`#1f51ff`) uniformly across all layouts, with no residual cyan circles surrounding nodes.
 - **FR-019**: System MUST deduplicate multi-linked neighbors in node details and preview panels to guarantee unique React keys.
 - **FR-020**: System MUST smoothly animate node coordinates over 500-600ms and smoothly fit camera viewport bounds whenever switching between layout algorithms.
-- **FR-021**: Canvas overlay controls MUST conditionally display simulation controls (Play/Pause, Reheat) only during Force-Directed Organic mode, hiding them in static layouts (Hierarchical, Grid, Radial).
+- **FR-021**: Canvas overlay controls MUST display simulation controls (Play/Pause, Reheat) in all layout modes, since continuous constrained physics runs across every layout.
+- **FR-022**: In constrained layout modes (Hierarchical, Grid, Radial), the physics simulation MUST maintain a perpetual minimum alpha (~0.01-0.02) so nodes exhibit subtle continuous organic breathing and micro-movement indefinitely.
+- **FR-023**: In constrained layout modes, dragging a node MUST temporarily override its anchor (fx/fy pinned to cursor); on release, the node MUST snap back toward its layout-computed position via the anchor spring (elastic rubber band effect).
+- **FR-024**: In constrained layout modes, the Reheat action MUST re-compute layout coordinates (re-run Dagre/Grid/Radial algorithms), re-anchor all nodes to their new computed positions, and reset alpha to 1.0 for a full re-cluster effect.
 
 ### Key Entities *(include if feature involves data)*
 
 - **WikiNode**: Represents a Markdown note. Contains id, title, path, folder, tags, aliases, excerpt, connection counts, and orphan status.
 - **WikiEdge**: Represents a connection between two notes. Contains source id, target id, and link type (wikilink or standard markdown link).
-- **SimNode**: Simulation entity extending note data with physics vectors ($x, y, v_x, v_y$), mass, degree centrality, dynamic radius, and category theme.
+- **SimNode**: Simulation entity extending note data with physics vectors ($x, y, v_x, v_y$), mass, degree centrality, dynamic radius, category theme, and layout anchor targets ($\text{anchorX}, \text{anchorY}$) for constrained spring physics.
 - **NeonNodeTheme**: Visual styling contract defining category, category label, pure accent hex, glowing aura, perimeter rim, text color, and label pill backdrop.
 - **WikiGraph**: Represents the complete graph dataset generated at build time, containing all nodes and edges.
 

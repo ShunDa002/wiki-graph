@@ -24,7 +24,8 @@
   - **Grid Structure** (`grid`)
   - **Concentric Radial** (`radial`)
 - **Visual Parity**: Verify that in all layouts, nodes remain circular discs with identical degree-centrality scaling and pure neon colors, edges remain Neon Blue straight vectors with arrows, and the background remains Deep Navy.
-- **Static Positioning**: Verify that in Hierarchical, Grid, and Radial modes, nodes stay locked to their geometric layout positions with zero physics drifting.
+- **Constrained Physics**: Verify that in Hierarchical, Grid, and Radial modes, nodes settle near their computed layout positions but exhibit subtle organic breathing/micro-movement (constrained spring physics). Nodes should drift no more than ~30-50px from their geometric targets.
+- **Perpetual Breathing**: After the initial settling period, verify nodes continue to subtly breathe and shift — the simulation never fully freezes. The graph should feel alive at all times.
 - **Pan & Zoom**: Verify camera pan, zoom, and fit-view work identically across all layouts.
 
 ### 3. Smooth Layout Transition Tweening
@@ -32,13 +33,24 @@
 - Verify nodes smoothly tween/interpolate from their origin coordinates to target coordinates over 500–600ms without visual snapping.
 - Verify the camera viewport automatically fits to encompass the new layout bounds.
 
-### 4. Contextual Canvas Overlay Controls
+### 4. Unified Canvas Overlay Controls
 - While in **Force-Directed (Organic)** layout:
   - Verify top-right canvas controls display Play/Pause, Reheat, Fit View, Zoom In/Out, and Toggle Labels.
 - While in **Hierarchical, Grid, or Radial** layouts:
-  - Verify the Play/Pause and Reheat simulation buttons are hidden, showing only Zoom In/Out, Fit View, and Toggle Labels.
+  - Verify the Play/Pause and Reheat simulation buttons **remain visible** (same controls as Organic mode).
+  - Verify clicking **Play/Pause** toggles the constrained physics simulation (pausing freezes nodes; resuming restores organic breathing).
+  - Verify clicking **Reheat** re-computes the layout positions (re-runs Dagre/Grid/Radial algorithm), re-anchors all nodes to their new positions, and resets alpha to 1.0 for a visible "settle into formation" animation.
 
-### 5. Interactive Selection, Neighbor Glow, and Node Preview
+### 5. Elastic Node Dragging in Constrained Layouts
+- While in any **non-force layout** (Hierarchical, Grid, or Radial):
+  - Drag a node away from its layout-computed position.
+  - Verify the node follows the cursor while dragging (fx/fy pinned).
+  - Release the node.
+  - Verify the node snaps back toward its layout-computed anchor position via the constrained spring — creating a visible elastic rubber band effect.
+- While in **Force-Directed (Organic)** layout:
+  - Drag a node and release — verify it stays at the released position (no snap-back anchor).
+
+### 6. Interactive Selection, Neighbor Glow, and Node Preview
 - Hover over any node in any layout: verify the node illuminates with a Neon Blue hover ring, connected edges illuminate in Neon Blue, and the hover tooltip card appears.
 - Click any node: verify the selected node displays a pulsing Neon Blue ring, direct neighbors display neon cyan rings, incident edges glow intensely, and the node preview side panel opens.
 - Click the canvas backdrop: verify selection and neighbor highlights are cleared and the preview panel closes.
