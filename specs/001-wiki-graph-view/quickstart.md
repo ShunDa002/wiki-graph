@@ -3,7 +3,7 @@
 ## Setup
 1. Define local environment variables:
    - `NEXT_PUBLIC_BACKEND_URL=http://localhost:8000`
-   - `REBUILD_SECRET_KEY=local_dev_secret`
+   - `GRAPH_REBUILD_SECRET_KEY=local_dev_secret`
 2. Start the FastAPI backend on port 8000 (or use development proxy).
 3. Install dependencies: `npm install`
 4. Start Next.js dev server: `npm run dev`
@@ -32,13 +32,40 @@
 - Verify nodes smoothly tween/interpolate from their origin coordinates to target coordinates over 500–600ms without visual snapping.
 - Verify the camera viewport automatically fits to encompass the new layout bounds.
 
-### 4. Contextual Canvas Overlay Controls
+### 4. Uniform Canvas Overlay Controls
 - While in **Force-Directed (Organic)** layout:
-  - Verify top-right canvas controls display Play/Pause, Reheat, Fit View, Zoom In/Out, and Toggle Labels.
+  - Verify bottom-left HUD controls display active Play/Pause (toggles physics simulation), Re-cluster (re-heats simulation with alpha=1.0), Fit View, Zoom In/Out, and Toggle Labels.
 - While in **Hierarchical, Grid, or Radial** layouts:
-  - Verify the Play/Pause and Reheat simulation buttons are hidden, showing only Zoom In/Out, Fit View, and Toggle Labels.
+  - Verify the Play/Pause and Re-cluster buttons remain visible in the HUD for visual consistency.
+  - Verify Play/Pause is rendered disabled with a tooltip indicating physics simulation is inactive in static layouts.
+  - Verify clicking Re-cluster re-computes static layout coordinates and smoothly animates nodes back into their structured positions.
 
 ### 5. Interactive Selection, Neighbor Glow, and Node Preview
 - Hover over any node in any layout: verify the node illuminates with a Neon Blue hover ring, connected edges illuminate in Neon Blue, and the hover tooltip card appears.
 - Click any node: verify the selected node displays a pulsing Neon Blue ring, direct neighbors display neon cyan rings, incident edges glow intensely, and the node preview side panel opens.
 - Click the canvas backdrop: verify selection and neighbor highlights are cleared and the preview panel closes.
+
+### 6. AI Chat Widget Floating Above Category Legend
+- Navigate to `http://localhost:3000/graph`.
+- On desktop screens (`>=640px`):
+  - Verify the circular chat launcher button floats at `bottom-16 right-5` directly above the category legend (`bottom-5 right-5`) without overlapping.
+  - Verify clicking the chat launcher smoothly opens the chat panel into standard view, anchoring at `bottom-5 right-5` (z-50) floating over the category legend.
+  - Click minimize: verify the panel smoothly collapses back to the launcher positioned at `bottom-16 right-5`.
+- On mobile screens (`<640px`):
+  - Verify the category legend is hidden and the chat launcher sits cleanly at `bottom-5 right-5`.
+  - Verify clicking the launcher opens the chat panel cleanly on mobile.
+
+### 7. AI Chat Inline Citation Click, Viewport Scroll & Pulse Highlighting
+- Navigate to `http://localhost:3000/graph` and open the AI chat widget.
+- Submit a query that produces an assistant response with sources and bracketed citations (e.g. `[1]`, `[2]`).
+- Verify that before clicking citations, the `SourcesAccordion` toggle indicates the number of sources and can be collapsed/expanded.
+- Ensure the chat message history is scrolled down into the assistant response text.
+- Click an inline citation button `[1]` in the message bubble:
+  - Verify the Sources Accordion automatically expands if it was collapsed.
+  - Verify `#chat-message-viewport` smoothly scrolls up to center `#source-item-1` directly in view.
+  - Verify `#source-item-1` illuminates with an animated pulsing highlight (`ring-2 ring-indigo-400 bg-indigo-950/80 animate-pulse`).
+- Click another citation button `[2]`:
+  - Verify `#chat-message-viewport` smoothly scrolls to center `#source-item-2` and transfers the pulsing highlight to it.
+- Repeatedly click citation `[2]`:
+  - Verify `#source-item-2` re-centers and re-triggers the pulsing animation without toggling the accordion closed.
+- Verify that background graph nodes, camera viewport, and Note Preview panel remain completely unchanged throughout citation interactions.

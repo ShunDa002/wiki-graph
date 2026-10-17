@@ -67,11 +67,10 @@ export function GraphToolbar({
         <button
           id="toggle-labels-btn"
           onClick={() => setShowLabels(!showLabels)}
-          className={`px-3 py-1.5 rounded-xl border transition font-medium ${
-            showLabels
-              ? 'bg-blue-600/20 border-blue-500/50 text-blue-300 hover:bg-blue-600/30'
-              : 'bg-neutral-950/60 border-neutral-800 text-neutral-400 hover:bg-neutral-800 hover:text-white'
-          }`}
+          className={`px-3 py-1.5 rounded-xl border transition font-medium ${showLabels
+            ? 'bg-blue-600/20 border-blue-500/50 text-blue-300 hover:bg-blue-600/30'
+            : 'bg-neutral-950/60 border-neutral-800 text-neutral-400 hover:bg-neutral-800 hover:text-white'
+            }`}
         >
           {showLabels ? 'Labels On' : 'Labels Off'}
         </button>
@@ -80,11 +79,10 @@ export function GraphToolbar({
         <button
           id="toggle-filter-panel-btn"
           onClick={toggleFilterPanel}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border transition font-medium ${
-            isFilterPanelOpen
-              ? 'bg-indigo-600/20 border-indigo-500/50 text-indigo-300 hover:bg-indigo-600/30'
-              : 'bg-neutral-950/60 border-neutral-800 text-neutral-400 hover:bg-neutral-800 hover:text-white'
-          }`}
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border transition font-medium ${isFilterPanelOpen
+            ? 'bg-indigo-600/20 border-indigo-500/50 text-indigo-300 hover:bg-indigo-600/30'
+            : 'bg-neutral-950/60 border-neutral-800 text-neutral-400 hover:bg-neutral-800 hover:text-white'
+            }`}
         >
           <SlidersHorizontal className="w-3.5 h-3.5" />
           <span>Filters</span>

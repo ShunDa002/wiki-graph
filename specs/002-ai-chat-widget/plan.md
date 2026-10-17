@@ -55,7 +55,6 @@ specs/002-ai-chat-widget/
 ### Source Code (repository root)
 
 ```text
-site/
 ├── components/
 │   └── chat/
 │       ├── ChatWidget.tsx

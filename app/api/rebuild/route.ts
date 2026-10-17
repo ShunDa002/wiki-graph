@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
-  const secretKey = process.env.REBUILD_SECRET_KEY || 'local_dev_secret';
+  const secretKey = process.env.GRAPH_REBUILD_SECRET_KEY || 'local_dev_secret';
 
   // 1. Validate incoming Authorization header
   const authHeader = request.headers.get('authorization');

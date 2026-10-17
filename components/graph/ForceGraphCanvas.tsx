@@ -22,7 +22,7 @@ import {
   Maximize2,
   Play,
   Pause,
-  Sparkles,
+  RefreshCw,
   Type,
   Compass,
   FileText,
@@ -355,10 +355,42 @@ export function ForceGraphCanvas({ graphData, onSelectNode }: ForceGraphCanvasPr
     transformRef.current.zoom = nextZoom;
   };
 
-  // Reheat / Re-cluster simulation
+  // Reheat / Re-cluster simulation (or Re-align in static layouts)
   const handleReheat = () => {
-    alphaRef.current = 1.0;
-    setIsSimRunning(true);
+    if (layoutAlgorithm === 'force') {
+      alphaRef.current = 1.0;
+      setIsSimRunning(true);
+    } else {
+      const container = containerRef.current;
+      const width = container?.clientWidth || 1000;
+      const height = container?.clientHeight || 800;
+      if (simNodesRef.current.length === 0) return;
+
+      const posMap = computeCanvasLayout(
+        simNodesRef.current,
+        simEdgesRef.current,
+        layoutAlgorithm,
+        { width, height }
+      );
+
+      simNodesRef.current.forEach((node) => {
+        const targetPos = posMap.get(node.id);
+        node.startX = node.x;
+        node.startY = node.y;
+        if (targetPos) {
+          node.targetX = targetPos.x;
+          node.targetY = targetPos.y;
+        } else {
+          node.targetX = node.x;
+          node.targetY = node.y;
+        }
+        node.vx = 0;
+        node.vy = 0;
+      });
+
+      tweenStartTimeRef.current = performance.now();
+      isTweeningRef.current = true;
+    }
   };
 
   // 4. Main 60fps Canvas Render & Physics Loop
@@ -936,31 +968,56 @@ export function ForceGraphCanvas({ graphData, onSelectNode }: ForceGraphCanvasPr
           >
             <Maximize2 className="w-4 h-4" />
           </button>
-          {/* Simulation controls: only visible during Force-Directed Organic layout */}
-          {layoutAlgorithm === 'force' && (
-            <>
-              <div className="w-[1px] h-4 bg-blue-900/50 mx-0.5" />
-              <button
-                onClick={() => setIsSimRunning(!isSimRunning)}
-                className={`p-2 rounded-xl transition ${isSimRunning
+          <div className="w-[1px] h-4 bg-blue-900/50 mx-0.5" />
+          {/* Simulation & Layout Controls (Rendered across all layouts) */}
+          <button
+            onClick={() => {
+              if (layoutAlgorithm === 'force') {
+                setIsSimRunning(!isSimRunning);
+              }
+            }}
+            disabled={layoutAlgorithm !== 'force'}
+            aria-disabled={layoutAlgorithm !== 'force'}
+            className={`p-2 rounded-xl transition ${
+              layoutAlgorithm === 'force'
+                ? isSimRunning
                   ? 'text-[#1f51ff] hover:bg-blue-500/10'
                   : 'text-neutral-500 hover:text-neutral-300 hover:bg-neutral-800/80'
-                  }`}
-                title={isSimRunning ? 'Pause Physics Simulation' : 'Resume Physics Simulation'}
-                aria-label="Toggle Physics Simulation"
-              >
-                {isSimRunning ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
-              </button>
-              <button
-                onClick={handleReheat}
-                className="p-2 text-[#ffe600] hover:text-yellow-300 hover:bg-yellow-500/10 rounded-xl transition"
-                title="Re-cluster / Re-heat Physics Simulation"
-                aria-label="Re-cluster Graph"
-              >
-                <Sparkles className="w-4 h-4" />
-              </button>
-            </>
-          )}
+                : 'text-neutral-600 opacity-40 cursor-not-allowed'
+            }`}
+            title={
+              layoutAlgorithm === 'force'
+                ? isSimRunning
+                  ? 'Pause Physics Simulation'
+                  : 'Resume Physics Simulation'
+                : 'Physics simulation is inactive in static layouts'
+            }
+            aria-label={
+              layoutAlgorithm === 'force'
+                ? 'Toggle Physics Simulation'
+                : 'Physics simulation is inactive in static layouts'
+            }
+          >
+            {layoutAlgorithm === 'force' && !isSimRunning ? (
+              <Play className="w-4 h-4" />
+            ) : (
+              <Pause className="w-4 h-4" />
+            )}
+          </button>
+          <button
+            onClick={handleReheat}
+            className="p-2 text-[#ffe600] hover:text-yellow-300 hover:bg-yellow-500/10 rounded-xl transition"
+            title={
+              layoutAlgorithm === 'force'
+                ? 'Re-cluster / Re-heat Physics Simulation'
+                : 'Re-cluster / Re-align Layout'
+            }
+            aria-label={
+              layoutAlgorithm === 'force' ? 'Re-cluster Graph' : 'Re-align Layout'
+            }
+          >
+            <RefreshCw className="w-4 h-4" />
+          </button>
           <button
             onClick={() => setShowLabels(!showLabels)}
             className={`p-2 rounded-xl transition ${showLabels

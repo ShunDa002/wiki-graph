@@ -10,7 +10,7 @@ The frontend and graph pipeline rely on the following environment variables to c
 - **Default**: `http://localhost:8000` (or `http://127.0.0.1:8000`)
 - **Format**: `http(s)://<host>:<port>`
 
-### `REBUILD_SECRET_KEY`
+### `GRAPH_REBUILD_SECRET_KEY`
 - **Description**: Server-side secret key used by the Next.js `/api/rebuild` route proxy to authorize requests to FastAPI `/graph/rebuild` with `X-Graph-API-Key`.
 - **Required**: Yes
 - **Default**: `local_dev_secret`

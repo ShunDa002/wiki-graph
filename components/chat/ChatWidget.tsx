@@ -106,9 +106,10 @@ export const ChatWidget: React.FC = () => {
 
       {/* Main positioning container - z-50 to ensure floating above NotePreview (z-40) */}
       <div
+        data-testid="chat-widget-container"
         className={`fixed z-50 transition-all ${
           isMinimized
-            ? 'bottom-5 right-5 pointer-events-auto'
+            ? 'sm:bottom-16 bottom-5 right-5 pointer-events-auto'
             : isExpanded
             ? 'inset-2 sm:inset-auto sm:bottom-5 sm:right-5 flex items-center justify-center sm:block pointer-events-none'
             : 'bottom-4 right-4 sm:bottom-5 sm:right-5 pointer-events-none'

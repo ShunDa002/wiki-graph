@@ -30,9 +30,9 @@ description: "Task list template for feature implementation"
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [x] T002 [P] Create `chat.types.ts` in `site/features/chat/chat.types.ts` defining `ChatMessage`, `Source`, and `ChatState`
-- [x] T003 [P] Create `chat.reducer.ts` in `site/features/chat/chat.reducer.ts` to manage layout `mode`, `draft`, `messages`, `isTyping`, and `threadId`
-- [x] T004 [P] Create `chat.storage.ts` in `site/features/chat/chat.storage.ts` to abstract `localStorage` and `sessionStorage` access
+- [x] T002 [P] Create `chat.types.ts` in `features/chat/chat.types.ts` defining `ChatMessage`, `Source`, and `ChatState`
+- [x] T003 [P] Create `chat.reducer.ts` in `features/chat/chat.reducer.ts` to manage layout `mode`, `draft`, `messages`, `isTyping`, and `threadId`
+- [x] T004 [P] Create `chat.storage.ts` in `features/chat/chat.storage.ts` to abstract `localStorage` and `sessionStorage` access
 
 **Checkpoint**: Foundation ready - user story implementation can now begin
 
@@ -46,12 +46,12 @@ description: "Task list template for feature implementation"
 
 ### Implementation for User Story 1
 
-- [x] T005 [P] [US1] Create `ChatLauncher.tsx` in `site/components/chat/ChatLauncher.tsx`
-- [x] T006 [P] [US1] Create `ChatHeader.tsx` in `site/components/chat/ChatHeader.tsx` with expand/restore and minimize controls
-- [x] T007 [US1] Create `ChatPanel.tsx` in `site/components/chat/ChatPanel.tsx` using Motion for React for transitions
-- [x] T008 [US1] Create `useChat.ts` hook in `site/features/chat/useChat.ts` integrating the reducer for mode switching
-- [x] T009 [US1] Create `ChatWidget.tsx` in `site/components/chat/ChatWidget.tsx` to compose launcher and panel based on state
-- [x] T010 [US1] Mount `<ChatWidget />` in the main application layout (`site/app/layout.tsx` or equivalent root component)
+- [x] T005 [P] [US1] Create `ChatLauncher.tsx` in `components/chat/ChatLauncher.tsx`
+- [x] T006 [P] [US1] Create `ChatHeader.tsx` in `components/chat/ChatHeader.tsx` with expand/restore and minimize controls
+- [x] T007 [US1] Create `ChatPanel.tsx` in `components/chat/ChatPanel.tsx` using Motion for React for transitions
+- [x] T008 [US1] Create `useChat.ts` hook in `features/chat/useChat.ts` integrating the reducer for mode switching
+- [x] T009 [US1] Create `ChatWidget.tsx` in `components/chat/ChatWidget.tsx` to compose launcher and panel based on state
+- [x] T010 [US1] Mount `<ChatWidget />` in the main application layout (`app/layout.tsx` or equivalent root component)
 
 **Checkpoint**: At this point, User Story 1 should be fully functional (UI navigation only).
 
@@ -65,15 +65,15 @@ description: "Task list template for feature implementation"
 
 ### Implementation for User Story 2
 
-- [x] T011 [P] [US2] Create `chat.api.ts` in `site/features/chat/chat.api.ts` with custom fetch reader for `/ask` SSE stream parsing and GET `/random-topics`
-- [x] T012 [P] [US2] Create `MessageComposer.tsx` in `site/components/chat/MessageComposer.tsx` (textarea, max 2000 chars limit constraint from data model, Enter to submit, Shift+Enter for newline, handle "Stop generating" button)
-- [x] T013 [P] [US2] Create `MessageBubble.tsx` in `site/components/chat/MessageBubble.tsx` (render user/assistant messages, handle partial SSE text, inline citations, streaming errors)
-- [x] T014 [P] [US2] Create `SuggestedPrompts.tsx` in `site/components/chat/SuggestedPrompts.tsx` (fetch from `/random-topics` initially and after messages, display skeleton loading)
-- [x] T015 [P] [US2] Create `TypingIndicator.tsx` in `site/components/chat/TypingIndicator.tsx`
-- [x] T016 [US2] Create `MessageViewport.tsx` in `site/components/chat/MessageViewport.tsx` (scrollable container, auto-scroll to bottom, display sources accordion collapsed by default)
-- [x] T017 [US2] Update `useChat.ts` in `site/features/chat/useChat.ts` to handle message submission, UUID v4 `threadId` generation, typing indicator logic, and backend API integration
+- [x] T011 [P] [US2] Create `chat.api.ts` in `features/chat/chat.api.ts` with custom fetch reader for `/ask` SSE stream parsing and GET `/random-topics`
+- [x] T012 [P] [US2] Create `MessageComposer.tsx` in `components/chat/MessageComposer.tsx` (textarea, max 2000 chars limit constraint from data model, Enter to submit, Shift+Enter for newline, handle "Stop generating" button)
+- [x] T013 [P] [US2] Create `MessageBubble.tsx` in `components/chat/MessageBubble.tsx` (render user/assistant messages, handle partial SSE text, inline citations, streaming errors)
+- [x] T014 [P] [US2] Create `SuggestedPrompts.tsx` in `components/chat/SuggestedPrompts.tsx` (fetch from `/random-topics` initially and after messages, display skeleton loading)
+- [x] T015 [P] [US2] Create `TypingIndicator.tsx` in `components/chat/TypingIndicator.tsx`
+- [x] T016 [US2] Create `MessageViewport.tsx` in `components/chat/MessageViewport.tsx` (scrollable container, auto-scroll to bottom, display sources accordion collapsed by default)
+- [x] T017 [US2] Update `useChat.ts` in `features/chat/useChat.ts` to handle message submission, UUID v4 `threadId` generation, typing indicator logic, and backend API integration
 - [x] T018 [US2] Update `useChat.ts` to automatically insert the predefined welcome message on first load
-- [x] T019 [US2] Integrate composer, viewport, and suggested prompts into `ChatPanel.tsx` in `site/components/chat/ChatPanel.tsx`
+- [x] T019 [US2] Integrate composer, viewport, and suggested prompts into `ChatPanel.tsx` in `components/chat/ChatPanel.tsx`
 
 **Checkpoint**: At this point, User Stories 1 AND 2 should both work independently.
 
@@ -87,7 +87,7 @@ description: "Task list template for feature implementation"
 
 ### Implementation for User Story 3
 
-- [x] T020 [P] [US3] Update `useChat.ts` in `site/features/chat/useChat.ts` to initialize state from `chat.storage.ts` (draft from localStorage, history from sessionStorage)
+- [x] T020 [P] [US3] Update `useChat.ts` in `features/chat/useChat.ts` to initialize state from `chat.storage.ts` (draft from localStorage, history from sessionStorage)
 - [x] T021 [P] [US3] Update `useChat.ts` to sync draft changes to `localStorage` and message history to `sessionStorage`
 - [x] T022 [US3] Add one-time non-blocking warning toast in `ChatWidget.tsx` if storage is disabled (graceful degradation)
 

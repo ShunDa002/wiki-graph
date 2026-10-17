@@ -8,22 +8,35 @@ import { Source } from '../../features/chat/chat.types';
 interface SourcesAccordionProps {
   sources: Source[];
   activeCitation?: number | null;
+  pulseTrigger?: number;
   onSelectSource?: (source: Source) => void;
 }
 
 export const SourcesAccordion: React.FC<SourcesAccordionProps> = ({
   sources,
   activeCitation,
+  pulseTrigger,
   onSelectSource,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
 
-  // Auto-expand if user clicks an inline citation
+  // Auto-expand and smoothly scroll to citation item if user clicks an inline citation
   useEffect(() => {
     if (activeCitation != null && sources.some((s) => s.citation === activeCitation)) {
       setIsOpen(true);
+
+      const el = document.getElementById(`source-item-${activeCitation}`);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      } else {
+        const timer = setTimeout(() => {
+          const delayedEl = document.getElementById(`source-item-${activeCitation}`);
+          delayedEl?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 50);
+        return () => clearTimeout(timer);
+      }
     }
-  }, [activeCitation, sources]);
+  }, [activeCitation, pulseTrigger, sources]);
 
   if (!sources || sources.length === 0) {
     return null;
@@ -70,13 +83,19 @@ export const SourcesAccordion: React.FC<SourcesAccordionProps> = ({
                   key={source.citation}
                   id={`source-item-${source.citation}`}
                   onClick={() => onSelectSource?.(source)}
-                  className={`flex items-start gap-2.5 px-3 py-2 transition-colors ${
+                  className={`flex items-start gap-2.5 px-3 py-2 transition-all duration-200 cursor-pointer ${
                     isHighlighted
-                      ? 'bg-indigo-950/70 border-l-2 border-indigo-400'
+                      ? 'bg-indigo-950/80 border-l-2 border-indigo-400 ring-2 ring-indigo-400/80 shadow-[0_0_15px_rgba(99,102,241,0.25)] animate-pulse'
                       : 'hover:bg-neutral-800/40'
                   }`}
                 >
-                  <span className="flex items-center justify-center min-w-5 h-5 rounded bg-indigo-600/30 text-indigo-300 font-mono text-[10px] font-bold border border-indigo-500/30 mt-0.5">
+                  <span
+                    className={`flex items-center justify-center min-w-5 h-5 rounded font-mono text-[10px] font-bold border mt-0.5 transition-colors ${
+                      isHighlighted
+                        ? 'bg-indigo-600 text-white border-indigo-300 shadow-[0_0_8px_rgba(99,102,241,0.5)]'
+                        : 'bg-indigo-600/30 text-indigo-300 border-indigo-500/30'
+                    }`}
+                  >
                     [{source.citation}]
                   </span>
 

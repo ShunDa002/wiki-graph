@@ -10,6 +10,7 @@ import { SearchBox } from '../../components/graph/SearchBox';
 import { FilterPanel } from '../../components/graph/FilterPanel';
 import { NodePreview } from '../../components/graph/NodePreview';
 import { GraphToolbar } from '../../components/graph/GraphToolbar';
+import { ChatWidget } from '../../components/chat/ChatWidget';
 
 export default function GraphPage() {
   const {
@@ -247,6 +248,9 @@ export default function GraphPage() {
             />
           </div>
         )}
+
+        {/* Floating AI Chat Widget */}
+        <ChatWidget />
       </div>
     </main>
   );

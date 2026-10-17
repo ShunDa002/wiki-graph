@@ -10,7 +10,7 @@
 
 - [X] T001 [P] Install core graph dependencies: `reactflow`, `@tanstack/react-query`, `zustand`, `zod`, `dagre` in `package.json`
 - [X] T002 [P] Install UI dependencies: `lucide-react`, `clsx`, `tailwind-merge` in `package.json`
-- [X] T003 Update environment types and configuration for `NEXT_PUBLIC_BACKEND_URL` and `REBUILD_SECRET_KEY`
+- [X] T003 Update environment types and configuration for `NEXT_PUBLIC_BACKEND_URL` and `GRAPH_REBUILD_SECRET_KEY`
 
 ---
 
@@ -90,7 +90,7 @@
 
 ### Implementation for Secure Graph Rebuild
 
-- [X] T022 [P] Create `app/api/rebuild/route.ts` to proxy POST requests to the FastAPI `/graph/rebuild` endpoint using `X-Graph-API-Key` derived from the `REBUILD_SECRET_KEY` environment variable.
+- [X] T022 [P] Create `app/api/rebuild/route.ts` to proxy POST requests to the FastAPI `/graph/rebuild` endpoint using `X-Graph-API-Key` derived from the `GRAPH_REBUILD_SECRET_KEY` environment variable.
 
 ---
 
@@ -122,6 +122,35 @@
 - [X] T040 [US4] Implement integration/component tests for multi-layout Canvas switching and contextual controls in `tests/canvas-multilayout.test.tsx`.
 - [X] T041 [US4] Run end-to-end multi-layout validation scenarios per `specs/001-wiki-graph-view/quickstart.md` across all 5 layouts.
 
+### Sub-phase 7.3: Uniform HUD Controls Across Layouts & Static Re-alignment (Completed)
+
+- [X] T042 [US4] Update HUD controls in `components/graph/ForceGraphCanvas.tsx` to display Play/Pause and Re-cluster buttons across all layouts; in static layouts, disable Play/Pause with an explanatory tooltip ("Physics simulation is inactive in static layouts").
+- [X] T043 [US4] Implement static layout re-alignment in `components/graph/ForceGraphCanvas.tsx` so clicking Re-cluster in static layouts re-computes coordinates and smoothly tweens nodes back to structured positions.
+- [X] T044 [P] [US4] Update component and integration tests in `tests/canvas-multilayout.test.tsx` to verify uniform HUD control rendering, disabled Play/Pause tooltip in static layouts, and Re-cluster re-alignment.
+- [X] T045 [US4] Validate uniform HUD controls and static layout re-alignment against `specs/001-wiki-graph-view/quickstart.md` across all 5 layouts.
+
+---
+
+## Phase 8: User Story 5 - AI Chat Widget Integration (Priority: P2)
+
+**Goal**: Mount the floating AI Chat Widget in the graph view, positioning the minimized launcher above the category legend (`sm:bottom-16 bottom-5 right-5`) on desktop and `bottom-5 right-5` on mobile, while allowing the open chat panel to anchor at `bottom-5 right-5` (z-50) floating over background elements. Within the assistant message bubbles, clicking inline citation buttons `[N]` auto-expands the `SourcesAccordion`, smoothly scrolls the chat message viewport (`#chat-message-viewport`) to center the referenced `#source-item-${N}` in view, and triggers an animated pulsing highlight on that source card.
+
+**Independent Test**: Load the graph view on desktop; verify the launcher button floats at `bottom-16 right-5` directly above the category legend without collision, clicking it opens the chat panel anchored at `bottom-5 right-5`, and minimizing returns it to `bottom-16 right-5` per Scenario 6 in `quickstart.md`. In an assistant message bubble with sources, verify clicking inline citation `[N]` auto-expands the accordion, smooth-scrolls `#chat-message-viewport` to center `#source-item-${N}`, and applies pulsing highlight per Scenario 7 in `quickstart.md`.
+
+### Sub-phase 8.1: AI Chat Widget Launcher Placement & Mounting (Completed)
+
+- [X] T046 [P] [US5] Update ChatWidget outer positioning container to use `sm:bottom-16 bottom-5 right-5` for the minimized launcher in `components/chat/ChatWidget.tsx`
+- [X] T047 [P] [US5] Mount `<ChatWidget />` component inside main graph page container in `app/graph/page.tsx`
+- [X] T048 [P] [US5] Implement component and integration tests verifying launcher desktop and mobile positioning classes, panel open/minimize transitions, and legend clearance in `tests/chat-widget.test.tsx`
+- [X] T049 [US5] Validate AI Chat Widget integration and positioning against `specs/001-wiki-graph-view/quickstart.md` Scenario 6
+
+### Sub-phase 8.2: Inline Citation Click, Viewport Scroll & Pulse Highlighting (Completed)
+
+- [X] T050 [P] [US5] Add `pulseTrigger?: number` prop, animated pulsing highlight classes (`ring-2 ring-indigo-400 border-l-2 border-indigo-400 bg-indigo-950/80 animate-pulse`), and smooth scroll-into-view centering on `#source-item-${citation}` in `components/chat/SourcesAccordion.tsx`
+- [X] T051 [P] [US5] Wire inline citation click handlers in `components/chat/MessageBubble.tsx` to validate citation existence against `message.sources`, auto-expand `SourcesAccordion`, increment `pulseTrigger`, set `activeCitation`, and gracefully ignore clicks on missing citations
+- [X] T052 [P] [US5] Implement unit and integration tests for citation button clicks, auto-expansion, scrollIntoView centering, pulse animation classes, repeated clicks, and missing citation handling in `tests/chat-citations.test.tsx`
+- [X] T053 [US5] Validate AI Chat citation click, smooth viewport scroll, and pulsing highlight against `specs/001-wiki-graph-view/quickstart.md` Scenario 7
+
 ---
 
 ## Phase N: Polish & Cross-Cutting Concerns
@@ -141,28 +170,44 @@
 - **Setup (Phase 1)**: Completed
 - **Foundational (Phase 2)**: Completed
 - **User Stories (Phase 3–6)**: Completed
-- **User Story 4 Multi-Layout Canvas (Phase 7.2)**: Ready to execute
+- **User Story 4 Multi-Layout Canvas (Phase 7.1–7.3)**: Completed
+- **User Story 5 AI Chat Widget Integration (Phase 8)**: Sub-phase 8.1 Completed; Sub-phase 8.2 Ready to execute
 - **Polish (Final Phase)**: Completed
 
-### User Story 4 (Sub-phase 7.2) Dependencies
+### User Story 5 Dependencies
 
-- **T034 (Layout Engine Calculators)** and **T035 (Layout Unit Tests)** can proceed in parallel.
-- **T036 (Tweening & Layout Integration)** depends on T034.
-- **T037 (Physics Suspension)** and **T038 (Contextual Overlay Controls)** build on T036.
-- **T039 (GraphCanvas Unification)** depends on T036, T037, and T038.
-- **T040 (Multi-Layout Tests)** and **T041 (E2E Validation)** depend on T039.
+- **Sub-phase 8.1 (Launcher Placement & Mounting)**: Completed (T046–T049).
+- **T050 (SourcesAccordion Pulse & Scroll)** implements `pulseTrigger`, pulsing styles, and `scrollIntoView({ behavior: 'smooth', block: 'center' })` in `components/chat/SourcesAccordion.tsx`.
+- **T051 (MessageBubble Citation Click Event)** wires citation button clicks, existence check, pulse triggering, and `data-citation` attributes in `components/chat/MessageBubble.tsx`.
+- **T052 (Citation Navigation Tests)** creates test suite covering click handling, auto-expansion, `scrollIntoView` calls, pulsing classes, and repeated click stability in `tests/chat-citations.test.tsx`.
+- **T053 (Scenario 7 E2E Validation)** validates end-to-end citation navigation and highlight behavior against `quickstart.md` Scenario 7.
 
 ### Parallel Opportunities
 
-- `T034` (implementing `lib/layout-engine.ts`) and `T035` (`tests/layout-engine.test.ts`) can be authored together.
-- `T037` and `T038` touch complementary logic blocks within `components/graph/ForceGraphCanvas.tsx`.
+- `T050` (`components/chat/SourcesAccordion.tsx`), `T051` (`components/chat/MessageBubble.tsx`), and `T052` (`tests/chat-citations.test.tsx`) touch distinct files and can proceed in parallel.
+- `T053` runs once implementation and tests are complete.
+
+---
+
+## Parallel Example: User Story 5 Sub-phase 8.2
+
+```bash
+# Launch implementation and test tasks for User Story 5 Sub-phase 8.2 together:
+Task: "Add pulseTrigger prop, animated pulsing highlight classes, and smooth scroll-into-view centering on #source-item-${citation} in components/chat/SourcesAccordion.tsx"
+Task: "Wire inline citation click handlers to validate citation existence, auto-expand SourcesAccordion, increment pulseTrigger, and set activeCitation in components/chat/MessageBubble.tsx"
+Task: "Implement unit and integration tests for citation button clicks, auto-expansion, scrollIntoView centering, pulse animation, and repeated clicks in tests/chat-citations.test.tsx"
+```
 
 ---
 
 ## Implementation Strategy
 
-1. **Step 1: Layout Engine Geometry**: Extend `lib/layout-engine.ts` with layout calculators that return precise coordinates `(x, y)` for circular Canvas nodes (`SimNode[]`) across Dagre TB/LR, Grid, and Concentric Radial algorithms.
-2. **Step 2: Tweening & Physics Management**: Add coordinate tween state and smooth easing in `components/graph/ForceGraphCanvas.tsx`. Ensure physics steps run only when `layoutAlgorithm === 'force'`.
-3. **Step 3: Contextual Overlay Controls**: Conditionally render simulation buttons (Play/Pause, Reheat) only when in Force mode.
-4. **Step 4: Unify GraphCanvas**: Update `components/graph/GraphCanvas.tsx` so all layout algorithms route to the unified Canvas component.
-5. **Step 5: Testing & Validation**: Run Vitest test suite (`layout-engine.test.ts`, `canvas-multilayout.test.ts`) and validate all 5 layouts against `quickstart.md`.
+1. **Step 1: ChatWidget Positioning Adjustments (T046)**: Update `components/chat/ChatWidget.tsx` so `isMinimized` applies `sm:bottom-16 bottom-5 right-5 pointer-events-auto`, clearing the desktop category legend while remaining at `bottom-5 right-5` on mobile screens where the legend is hidden.
+2. **Step 2: Mount ChatWidget in Graph View (T047)**: Import `<ChatWidget />` in `app/graph/page.tsx` and mount it inside the graph view layout overlay.
+3. **Step 3: Component and Integration Testing (T048)**: Add unit/integration tests in `tests/chat-widget.test.tsx` verifying launcher rendering, desktop/mobile responsive positioning classes, open/minimize state transitions, and z-index ordering above NotePreview.
+4. **Step 4: End-to-End Validation (T049)**: Validate all criteria in Scenario 6 of `quickstart.md` across desktop and mobile viewport widths.
+5. **Step 5: SourcesAccordion Pulse & Scroll (T050)**: Update `components/chat/SourcesAccordion.tsx` to accept `pulseTrigger`, auto-expand on active citation, smooth-scroll `#source-item-${citation}` into view centered, and apply the pulsing neon/indigo ring animation.
+6. **Step 6: MessageBubble Citation Clicks (T051)**: Update `components/chat/MessageBubble.tsx` to handle inline citation clicks, verify the citation exists in `message.sources`, pass `pulseTrigger` to `SourcesAccordion`, and safely ignore clicks on missing citations.
+7. **Step 7: Component & Integration Testing (T052)**: Create `tests/chat-citations.test.tsx` verifying click events, auto-expansion, spy on `Element.prototype.scrollIntoView`, pulsing highlight classes, repeated click re-triggering, and graceful error avoidance on missing citation numbers.
+8. **Step 8: End-to-End Validation (T053)**: Validate all criteria in Scenario 7 of `quickstart.md`.
+

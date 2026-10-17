@@ -1,6 +1,6 @@
 import React from 'react';
 import { describe, it, expect, beforeEach } from 'vitest';
-import { render, screen, act } from '@testing-library/react';
+import { render, screen, act, fireEvent } from '@testing-library/react';
 import { ForceGraphCanvas } from '../components/graph/ForceGraphCanvas';
 import { GraphCanvas } from '../components/graph/GraphCanvas';
 import { useGraphStore, LayoutAlgorithm } from '../store/useGraphStore';
@@ -93,7 +93,7 @@ describe('Multi-Layout Canvas Unification & Contextual Controls', () => {
   const staticLayouts: LayoutAlgorithm[] = ['dagre-tb', 'dagre-lr', 'grid', 'radial'];
 
   staticLayouts.forEach((layout) => {
-    it(`hides simulation buttons when active layout is ${layout}`, () => {
+    it(`displays uniform HUD buttons with disabled simulation control in ${layout} layout`, () => {
       act(() => {
         useGraphStore.getState().setLayoutAlgorithm(layout);
       });
@@ -105,34 +105,48 @@ describe('Multi-Layout Canvas Unification & Contextual Controls', () => {
       expect(screen.getByTitle('Zoom Out')).toBeInTheDocument();
       expect(screen.getByTitle('Fit View / Reset Camera')).toBeInTheDocument();
 
-      // Simulation buttons must be hidden in static layouts
-      expect(screen.queryByTitle(/Physics Simulation/i)).not.toBeInTheDocument();
-      expect(screen.queryByTitle(/Re-cluster/i)).not.toBeInTheDocument();
+      // Simulation & layout buttons are present in all layouts
+      const simBtn = screen.getByTitle('Physics simulation is inactive in static layouts');
+      expect(simBtn).toBeInTheDocument();
+      expect(simBtn).toBeDisabled();
+
+      const reclusterBtn = screen.getByTitle(/Re-cluster \/ Re-align Layout/i);
+      expect(reclusterBtn).toBeInTheDocument();
+      expect(reclusterBtn).not.toBeDisabled();
+
+      // Clicking recluster in static layout executes without errors
+      fireEvent.click(reclusterBtn);
     });
   });
 
-  it('dynamically toggles simulation buttons when switching layout from force to grid', () => {
+  it('maintains uniform HUD buttons when switching layout between force and grid', () => {
     render(<ForceGraphCanvas graphData={mockGraphData} />);
 
-    // Initially in force mode -> simulation buttons exist
-    expect(screen.getByTitle(/Re-cluster/i)).toBeInTheDocument();
+    // Initially in force mode -> simulation button is enabled
+    const forceSimBtn = screen.getByTitle(/Pause Physics Simulation/i);
+    expect(forceSimBtn).toBeInTheDocument();
+    expect(forceSimBtn).not.toBeDisabled();
+    expect(screen.getByTitle(/Re-cluster \/ Re-heat Physics Simulation/i)).toBeInTheDocument();
 
     // Switch to grid layout
     act(() => {
       useGraphStore.getState().setLayoutAlgorithm('grid');
     });
 
-    // Reheat & physics buttons should now be removed from DOM
-    expect(screen.queryByTitle(/Re-cluster/i)).not.toBeInTheDocument();
-    expect(screen.queryByTitle(/Physics Simulation/i)).not.toBeInTheDocument();
+    // In grid layout -> buttons remain present; simulation button becomes disabled with inactive tooltip
+    const gridSimBtn = screen.getByTitle('Physics simulation is inactive in static layouts');
+    expect(gridSimBtn).toBeInTheDocument();
+    expect(gridSimBtn).toBeDisabled();
+    expect(screen.getByTitle(/Re-cluster \/ Re-align Layout/i)).toBeInTheDocument();
 
     // Switch back to force layout
     act(() => {
       useGraphStore.getState().setLayoutAlgorithm('force');
     });
 
-    // Reheat & physics buttons should reappear
-    expect(screen.getByTitle(/Re-cluster/i)).toBeInTheDocument();
+    // In force layout -> simulation button is active again
+    expect(screen.getByTitle(/Pause Physics Simulation/i)).toBeInTheDocument();
+    expect(screen.getByTitle(/Re-cluster \/ Re-heat Physics Simulation/i)).toBeInTheDocument();
   });
 
   it('renders via unified Canvas engine through GraphCanvas for all layouts', () => {

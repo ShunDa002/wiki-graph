@@ -20,7 +20,7 @@ export const MessageViewport: React.FC<MessageViewportProps> = ({
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+    bottomRef.current?.scrollIntoView?.({ behavior: 'smooth' });
   }, [messages, mockTyping, isStreaming]);
 
   // For active streaming tokens, keep scroll pinned
@@ -28,7 +28,7 @@ export const MessageViewport: React.FC<MessageViewportProps> = ({
   const lastMessageLength = lastMessage?.content?.length;
   useEffect(() => {
     if (isStreaming) {
-      bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+      bottomRef.current?.scrollIntoView?.({ behavior: 'smooth' });
     }
   }, [lastMessageLength, isStreaming]);
 

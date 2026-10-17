@@ -86,3 +86,19 @@ Visual contract for the "Neon" theme:
 - `borderRgba`: string (Delicate perimeter rim)
 - `textColor`: string (Label typography color)
 - `pillBg`: string (Translucent deep navy label pill background)
+
+## Chat Source & Citation Interaction Model
+
+### Source
+Represents an individual document citation returned by the AI assistant:
+- `citation`: number (1-based index corresponding to inline bracket markers, e.g. `[1]`)
+- `path`: string (Vault relative path of the cited note)
+- `title`: string (Optional note title, defaults to note basename)
+- `confidence`: number | string (Optional confidence ranking)
+- `score`: number (Optional similarity score)
+
+### CitationState (MessageBubble & SourcesAccordion)
+Transient component state for inline citation navigation and visual feedback:
+- `activeCitation`: number | null (Currently selected citation index)
+- `pulseTrigger`: number (Incrementing counter used to re-trigger pulse animations and re-scroll on repeated clicks)
+- `isOpen`: boolean (Accordion open state; automatically expands to `true` when a valid citation button is clicked)

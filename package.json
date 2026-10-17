@@ -5,7 +5,6 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "prebuild": "npm run build:graph",
     "build:graph": "tsx scripts/build-graph.ts",
     "fetch:wiki": "tsx scripts/fetch-wiki.ts",
     "start": "next start",

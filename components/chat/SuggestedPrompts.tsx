@@ -9,6 +9,69 @@ interface SuggestedPromptsProps {
   refreshTrigger?: number | string;
 }
 
+export const DEFAULT_SUGGESTED_TOPICS = [
+  'Graph Layouts',
+  'Wikilinks',
+  'Obsidian Notes',
+  'Knowledge Vaults',
+  'Semantic Search',
+  'Cytoscape Engine',
+  'Markdown Parsing',
+  'Tag Filtering',
+  'Note Previews',
+  'Vector Embeddings',
+  'Backlinks Analysis',
+  'Clustering Algorithms',
+];
+
+/**
+ * Extracts and cleans topic strings from various API response shapes
+ * (flat string array, object with topics/data/suggestions array, or array of objects).
+ */
+export function extractTopicsList(data: unknown): string[] {
+  let list: unknown[] = [];
+  if (Array.isArray(data)) {
+    list = data;
+  } else if (typeof data === 'object' && data !== null) {
+    const record = data as Record<string, unknown>;
+    if (Array.isArray(record.topics)) list = record.topics;
+    else if (Array.isArray(record.random_topics)) list = record.random_topics;
+    else if (Array.isArray(record.suggestions)) list = record.suggestions;
+    else if (Array.isArray(record.data)) list = record.data;
+    else if (Array.isArray(record.items)) list = record.items;
+  }
+
+  return list
+    .map((item) => {
+      if (typeof item === 'string') return item.trim();
+      if (typeof item === 'object' && item !== null) {
+        const itemObj = item as Record<string, unknown>;
+        const val = itemObj.topic || itemObj.title || itemObj.name || itemObj.label || itemObj.text;
+        if (typeof val === 'string') return val.trim();
+      }
+      return '';
+    })
+    .filter((t) => Boolean(t));
+}
+
+/**
+ * Formats a topic string into a natural question prompt chip.
+ * Avoids redundant "What is What is...?" or duplicated trailing question marks.
+ */
+export function formatTopicToPrompt(topic: string): string {
+  const trimmed = topic.trim();
+  if (!trimmed) return '';
+
+  // If already formatted as a full question/inquiry, preserve it with single trailing ?
+  if (/^(what|how|why|where|when|which|who|can|explain|tell)\b/i.test(trimmed)) {
+    return trimmed.endsWith('?') ? trimmed : `${trimmed}?`;
+  }
+
+  // Strip trailing punctuation before wrapping
+  const clean = trimmed.replace(/[?.!]+$/, '');
+  return `What is ${clean}?`;
+}
+
 export const SuggestedPrompts: React.FC<SuggestedPromptsProps> = ({
   onSelectPrompt,
   disabled = false,
@@ -20,35 +83,83 @@ export const SuggestedPrompts: React.FC<SuggestedPromptsProps> = ({
 
   useEffect(() => {
     let isMounted = true;
+    const abortController = new AbortController();
+
     setIsLoading(true);
     setHasError(false);
 
     const fetchPrompts = async () => {
       try {
+        // Build candidate URLs in order of reliability:
+        // 1. Same-origin Next.js route /random-topics (most reliable, avoids CORS/DNS issues)
+        // 2. Relative or local URL
+        // 3. Fallback backend URL if explicitly non-docker
+        const candidates: string[] = [];
+
+        if (typeof window !== 'undefined') {
+          // In browser, relative /random-topics hits the Next.js same-origin API route
+          candidates.push('/random-topics');
+        }
+
         const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL?.replace(/\/+$/, '') || '';
+        if (backendUrl && !backendUrl.includes('host.docker.internal')) {
+          candidates.push(`${backendUrl}/random-topics`);
+        }
+
+        // Add fallback relative route if not already added
+        if (!candidates.includes('/random-topics')) {
+          candidates.push('/random-topics');
+        }
+
         let response: Response | null = null;
-        if (backendUrl) {
+
+        for (const url of candidates) {
+          if (abortController.signal.aborted) return;
           try {
-            response = await fetch(`${backendUrl}/random-topics?t=${Date.now()}`);
+            // Short timeout to prevent hanging on unresponsive endpoints
+            const timeoutSignal = AbortSignal.timeout ? AbortSignal.timeout(3000) : undefined;
+            const res = await fetch(url, {
+              headers: { Accept: 'application/json' },
+              cache: 'no-store',
+              signal: timeoutSignal,
+            });
+
+            if (res.ok) {
+              response = res;
+              break;
+            }
           } catch {
-            // Backend unreachable, fallback to local
+            // Try next candidate
           }
         }
-        if (!response || !response.ok) {
-          response = await fetch(`/random-topics?t=${Date.now()}`);
+
+        let rawTopics: string[] = [];
+
+        if (response && response.ok) {
+          const data = await response.json();
+          rawTopics = extractTopicsList(data);
         }
-        if (!response.ok) {
-          throw new Error('Failed to fetch topics');
+
+        // If candidates failed or returned empty list, fall back to default topics
+        if (rawTopics.length === 0) {
+          rawTopics = DEFAULT_SUGGESTED_TOPICS;
         }
-        const data = await response.json();
-        if (isMounted && Array.isArray(data)) {
-          // Shuffle or select a random slice if more than 3
-          const shuffled = [...data].sort(() => 0.5 - Math.random());
-          setPrompts(shuffled.slice(0, 3).map((topic: string) => `What is ${topic}?`));
+
+        if (isMounted) {
+          // Shuffle and pick top 3
+          const shuffled = [...rawTopics].sort(() => 0.5 - Math.random());
+          const selectedPrompts = shuffled
+            .slice(0, 3)
+            .map(formatTopicToPrompt)
+            .filter(Boolean);
+
+          setPrompts(selectedPrompts);
         }
       } catch {
         if (isMounted) {
-          setHasError(true);
+          // Even on unexpected error, show default fallback prompts rather than an empty widget
+          const shuffled = [...DEFAULT_SUGGESTED_TOPICS].sort(() => 0.5 - Math.random());
+          setPrompts(shuffled.slice(0, 3).map(formatTopicToPrompt));
         }
       } finally {
         if (isMounted) {
@@ -61,6 +172,7 @@ export const SuggestedPrompts: React.FC<SuggestedPromptsProps> = ({
 
     return () => {
       isMounted = false;
+      abortController.abort();
     };
   }, [refreshTrigger]);
 

@@ -13,11 +13,23 @@ interface MessageBubbleProps {
 export const MessageBubble: React.FC<MessageBubbleProps> = ({ message }) => {
   const isUser = message.role === 'user';
   const [activeCitation, setActiveCitation] = useState<number | null>(null);
+  const [pulseTrigger, setPulseTrigger] = useState<number>(0);
+
+  const isStreaming = message.status === 'streaming';
 
   const timeString = new Date(message.timestamp).toLocaleTimeString([], {
     hour: '2-digit',
     minute: '2-digit',
   });
+
+  const handleCitationClick = (citationNumber: number) => {
+    if (isStreaming) return;
+    if (!message.sources || !message.sources.some((s) => s.citation === citationNumber)) {
+      return;
+    }
+    setActiveCitation(citationNumber);
+    setPulseTrigger((prev) => prev + 1);
+  };
 
   const renderContentWithCitations = (text: string) => {
     if (!text) return null;
@@ -36,9 +48,15 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message }) => {
         <button
           key={`citation-${matchIndex}`}
           type="button"
-          onClick={() => setActiveCitation(citationNumber)}
-          className="inline-flex items-center text-[11px] font-semibold font-mono px-1 py-0.5 mx-0.5 rounded bg-indigo-500/20 text-indigo-300 hover:bg-indigo-500/40 hover:text-indigo-100 border border-indigo-500/40 cursor-pointer align-baseline transition-colors"
-          title={`View Source [${citationNumber}]`}
+          data-citation={citationNumber}
+          disabled={isStreaming}
+          onClick={() => handleCitationClick(citationNumber)}
+          className={`inline-flex items-center text-[11px] font-semibold font-mono px-1 py-0.5 mx-0.5 rounded border align-baseline transition-colors ${
+            isStreaming
+              ? 'opacity-60 cursor-not-allowed bg-indigo-500/10 text-indigo-400/60 border-indigo-500/20'
+              : 'bg-indigo-500/20 text-indigo-300 hover:bg-indigo-500/40 hover:text-indigo-100 border-indigo-500/40 cursor-pointer'
+          }`}
+          title={isStreaming ? `Generating response...` : `View Source [${citationNumber}]`}
         >
           [{citationNumber}]
         </button>
@@ -63,11 +81,10 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message }) => {
       className={`flex items-start gap-2.5 my-2 px-3 ${isUser ? 'flex-row-reverse' : 'flex-row'}`}
     >
       <div
-        className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 text-xs shadow-sm ${
-          isUser
-            ? 'bg-indigo-600 text-white'
-            : 'bg-neutral-800 border border-neutral-700 text-indigo-400'
-        }`}
+        className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 text-xs shadow-sm ${isUser
+          ? 'bg-indigo-600 text-white'
+          : 'bg-neutral-800 border border-neutral-700 text-indigo-400'
+          }`}
       >
         {isUser ? <User className="w-3.5 h-3.5" /> : <Bot className="w-3.5 h-3.5" />}
       </div>
@@ -79,17 +96,20 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message }) => {
             <SourcesAccordion
               sources={message.sources}
               activeCitation={activeCitation}
-              onSelectSource={(s) => setActiveCitation(s.citation)}
+              pulseTrigger={pulseTrigger}
+              onSelectSource={(s) => {
+                setActiveCitation(s.citation);
+                setPulseTrigger((prev) => prev + 1);
+              }}
             />
           </div>
         )}
 
         <div
-          className={`px-3.5 py-2.5 rounded-2xl text-xs sm:text-sm leading-relaxed shadow-md ${
-            isUser
-              ? 'bg-gradient-to-tr from-indigo-600 to-indigo-500 text-white rounded-tr-sm border border-indigo-400/30'
-              : 'bg-neutral-800/90 text-neutral-200 rounded-tl-sm border border-neutral-700/60 w-full'
-          }`}
+          className={`px-3.5 py-2.5 rounded-2xl text-xs sm:text-sm leading-relaxed shadow-md ${isUser
+            ? 'bg-gradient-to-tr from-indigo-600 to-indigo-500 text-white rounded-tr-sm border border-indigo-400/30'
+            : 'bg-neutral-800/90 text-neutral-200 rounded-tl-sm border border-neutral-700/60 w-full'
+            }`}
         >
           {!message.content && message.status === 'streaming' ? (
             <div className="flex items-center gap-1.5 py-0.5 text-neutral-400">

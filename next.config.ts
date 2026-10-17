@@ -7,7 +7,6 @@ const nextConfig: NextConfig = {
   transpilePackages: ["react-cytoscapejs"],
   async rewrites() {
     const backendUrl = (
-      process.env.BACKEND_INTERNAL_URL ||
       process.env.NEXT_PUBLIC_BACKEND_URL ||
       'http://host.docker.internal:8001'
     ).replace(/\/+$/, '');
