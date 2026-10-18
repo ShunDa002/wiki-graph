@@ -71,7 +71,7 @@ export function parseWikiRepoUrl(urlStr?: string): RepoConfig {
  * Fetches the wiki markdown files from the configured GitHub repository and extracts them to targetDir.
  */
 export async function fetchWiki(targetDir?: string, repoUrl?: string): Promise<string> {
-  const projectRoot = path.resolve(__dirname, '..');
+  const projectRoot = path.resolve(import.meta.dirname, '..');
   const outputDir = targetDir || path.join(projectRoot, '.wiki-temp');
   const urlToFetch = repoUrl || process.env.WIKI_REPO_URL;
   const config = parseWikiRepoUrl(urlToFetch);
@@ -164,7 +164,8 @@ export async function fetchWiki(targetDir?: string, repoUrl?: string): Promise<s
 }
 
 // Allow direct CLI execution: tsx scripts/fetch-wiki.ts
-if (process.argv[1] && path.resolve(process.argv[1]) === path.resolve(__filename)) {
+if (process.argv[1] && path.resolve(process.argv[1]) === path.resolve(import.meta.filename
+)) {
   fetchWiki().catch(err => {
     console.error('❌ Error fetching wiki:', err);
     process.exit(1);

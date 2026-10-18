@@ -11,7 +11,7 @@ async function buildGraph() {
   const startTime = Date.now();
 
   // Root directory of project
-  const projectRoot = path.resolve(__dirname, '..');
+  const projectRoot = path.resolve(import.meta.dirname, '..');
 
   // Wiki target directory
   let wikiDir = path.join(projectRoot, '.wiki-temp');

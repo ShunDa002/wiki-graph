@@ -1,50 +1,78 @@
 export const dynamic = 'force-dynamic';
 
 export const DEFAULT_TOPICS = [
-  'Graph Layouts',
-  'Wikilinks',
-  'Obsidian Notes',
-  'Knowledge Vaults',
-  'Semantic Search',
-  'Cytoscape Engine',
-  'Markdown Parsing',
-  'Tag Filtering',
-  'Note Previews',
-  'Vector Embeddings',
-  'Backlinks Analysis',
-  'Clustering Algorithms',
-];
+  'LangChain',
+  'Agentic AI',
+  'Asynchronous Programming',
+  'React Hooks',
+  'useState (React)',
+  'useEffect (React)',
+  'LangSmith',
+  'LangGraph',
+  'LangServe',
+] as const;
+
+interface TopicsResponse {
+  topics: string[];
+}
+
+function isStringArray(value: unknown): value is string[] {
+  return (
+    Array.isArray(value) &&
+    value.every((item): item is string => typeof item === 'string')
+  );
+}
+
+function isTopicsResponse(value: unknown): value is TopicsResponse {
+  if (
+    typeof value !== 'object' ||
+    value === null ||
+    !('topics' in value)
+  ) {
+    return false;
+  }
+
+  return isStringArray(value.topics);
+}
 
 export async function GET() {
   const backendBase = (
-    process.env.NEXT_PUBLIC_BACKEND_URL ||
-    ''
+    process.env.NEXT_PUBLIC_BACKEND_URL ?? ''
   ).replace(/\/+$/, '');
 
   if (backendBase) {
-    try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 2000);
-      const res = await fetch(`${backendBase}/random-topics`, {
-        signal: controller.signal,
-        headers: { Accept: 'application/json' },
-      });
-      clearTimeout(timeoutId);
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 2_000);
 
-      if (res.ok) {
-        const data = await res.json();
-        if (Array.isArray(data) && data.length > 0) {
+    try {
+      const response = await fetch(`${backendBase}/random-topics`, {
+        signal: controller.signal,
+        headers: {
+          Accept: 'application/json',
+        },
+        cache: 'no-store',
+      });
+
+      if (response.ok) {
+        const data: unknown = await response.json();
+
+        // Supported format: ["Topic 1", "Topic 2"]
+        if (isStringArray(data) && data.length > 0) {
           return Response.json(data);
         }
-        if (data && Array.isArray(data.topics) && data.topics.length > 0) {
+
+        // Supported format: { topics: ["Topic 1", "Topic 2"] }
+        if (isTopicsResponse(data) && data.topics.length > 0) {
           return Response.json(data.topics);
         }
       }
     } catch {
-      // Backend unreachable or does not provide /random-topics, fall back to default
+      // The backend is unavailable, took too long, returned invalid JSON,
+      // or does not provide /random-topics. Use the default topics below.
+    } finally {
+      clearTimeout(timeoutId);
     }
   }
 
   return Response.json(DEFAULT_TOPICS);
 }
-

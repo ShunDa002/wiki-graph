@@ -43,3 +43,6 @@ next-env.d.ts
 # temp build dirs
 .wiki-temp/
 
+/dist/
+.vinext/
+.cloudflare/
