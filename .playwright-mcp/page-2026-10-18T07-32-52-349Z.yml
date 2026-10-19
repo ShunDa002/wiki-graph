@@ -1,0 +1,31 @@
+- generic [active] [ref=e1]:
+  - main [ref=e2]:
+    - generic [ref=e3]:
+      - generic [ref=e4]:
+        - generic [ref=e5]: 🕸️
+        - heading "LLM Wiki Graph" [level=1] [ref=e6]
+        - generic [ref=e7]: Neon Constellation
+      - textbox "Search notes, aliases, tags..." [ref=e11]
+      - generic [ref=e13]:
+        - generic [ref=e14]:
+          - generic [ref=e15]:
+            - generic [ref=e17]: "0"
+            - text: Notes
+          - generic [ref=e18]: •
+          - generic [ref=e19]: 0 Links
+        - generic [ref=e20]:
+          - generic [ref=e21]:
+            - generic [ref=e26]: Layout
+            - combobox [ref=e27] [cursor=pointer]:
+              - option "Force-Directed (Organic)" [selected]
+              - option "Hierarchical (Top-Down)"
+              - option "Hierarchical (Left-Right)"
+              - option "Grid Structure"
+              - option "Concentric Radial"
+          - button "Labels On" [ref=e28]
+          - button "Filters" [ref=e29]
+          - button "Refresh" [ref=e32]
+    - generic [ref=e37]:
+      - paragraph [ref=e41]: Loading knowledge graph...
+      - button "Open AI chat assistant" [ref=e44] [cursor=pointer]
+  - button "Open Next.js Dev Tools" [ref=e56] [cursor=pointer]

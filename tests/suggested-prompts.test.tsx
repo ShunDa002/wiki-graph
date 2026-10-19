@@ -1,12 +1,11 @@
 import '@testing-library/jest-dom/vitest';
 import React from 'react';
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import {
   SuggestedPrompts,
   extractTopicsList,
   formatTopicToPrompt,
-  DEFAULT_SUGGESTED_TOPICS,
 } from '../components/chat/SuggestedPrompts';
 
 describe('extractTopicsList', () => {
@@ -96,18 +95,68 @@ describe('SuggestedPrompts Component', () => {
     expect(onSelectPrompt).toHaveBeenCalledWith(firstBtn.textContent);
   });
 
-  it('falls back to default suggested topics when API endpoint fails', async () => {
+  it('displays error notice and a Retry button when endpoint fails, without dummy topics', async () => {
     global.fetch = vi.fn().mockRejectedValue(new Error('Network error'));
 
     const onSelectPrompt = vi.fn();
     render(<SuggestedPrompts onSelectPrompt={onSelectPrompt} />);
 
     await waitFor(() => {
+      expect(screen.getByText('Failed to load suggested topics')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /retry/i })).toBeInTheDocument();
+    });
+
+    // Verify no prompt chips are displayed
+    expect(screen.queryByText(/^What is .+/)).not.toBeInTheDocument();
+  });
+
+  it('displays error notice when endpoint returns 502 Bad Gateway', async () => {
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 502,
+      json: async () => ({ error: 'Failed to fetch topics from backend' }),
+    } as Response);
+
+    const onSelectPrompt = vi.fn();
+    render(<SuggestedPrompts onSelectPrompt={onSelectPrompt} />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Failed to load suggested topics')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /retry/i })).toBeInTheDocument();
+    });
+  });
+
+  it('re-fetches /random-topics and displays prompt chips upon clicking Retry', async () => {
+    // First call fails
+    const fetchMock = vi
+      .fn()
+      .mockRejectedValueOnce(new Error('Server unavailable'))
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ['Knowledge Graphs', 'Neural Constellations', 'Semantic Links'],
+      } as Response);
+
+    global.fetch = fetchMock;
+
+    const onSelectPrompt = vi.fn();
+    render(<SuggestedPrompts onSelectPrompt={onSelectPrompt} />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Failed to load suggested topics')).toBeInTheDocument();
+    });
+
+    const retryBtn = screen.getByRole('button', { name: /retry/i });
+    expect(retryBtn).toBeInTheDocument();
+
+    fireEvent.click(retryBtn);
+
+    // After retry, successful chips appear and error notice disappears
+    await waitFor(() => {
       const buttons = screen.getAllByRole('button');
       expect(buttons.length).toBe(3);
     });
 
-    const buttons = screen.getAllByRole('button');
-    expect(buttons[0].textContent).toMatch(/^What is .+\?$/);
+    expect(screen.queryByText('Failed to load suggested topics')).not.toBeInTheDocument();
+    expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 });

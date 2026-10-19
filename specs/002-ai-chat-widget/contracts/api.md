@@ -38,13 +38,15 @@ Handles the submission of a user message and returns a streamed Server-Sent Even
     ```
 
 ### GET `/random-topics`
-Retrieves a list of suggested topics to display to the user.
+Retrieves a list of suggested topics dynamically from the live backend to display to the user.
 
 #### Request
 - **URL**: `/random-topics`
 - **Method**: `GET`
+- **Headers**:
+  - `Accept: application/json`
 
-#### Response
+#### Response: Success (200 OK)
 - **Content-Type**: `application/json`
 - **Body**:
   ```json
@@ -53,4 +55,16 @@ Retrieves a list of suggested topics to display to the user.
     "Markdown Parsing",
     "Authentication"
   ]
+  ```
+  *(Or object format: `{"topics": ["Topic 1", "Topic 2"]}`)*
+
+#### Response: Upstream Failure (502 Bad Gateway)
+Returned when the live backend is unreachable, times out, or fails to provide valid topics.
+- **Status**: `502 Bad Gateway`
+- **Content-Type**: `application/json`
+- **Body**:
+  ```json
+  {
+    "error": "Failed to fetch topics from backend"
+  }
   ```

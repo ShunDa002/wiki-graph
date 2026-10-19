@@ -1,0 +1,73 @@
+- generic [ref=e1]:
+  - main [ref=e2]:
+    - generic [ref=e3]:
+      - generic [ref=e4]:
+        - generic [ref=e5]: 🕸️
+        - heading "LLM Wiki Graph" [level=1] [ref=e6]
+        - generic [ref=e7]: Neon Constellation
+      - textbox "Search notes, aliases, tags..." [ref=e11]
+      - generic [ref=e13]:
+        - generic [ref=e14]:
+          - generic [ref=e15]:
+            - generic [ref=e17]: "45"
+            - text: Notes
+          - generic [ref=e18]: •
+          - generic [ref=e19]: 112 Links
+        - generic [ref=e20]:
+          - generic [ref=e21]:
+            - generic [ref=e26]: Layout
+            - combobox [ref=e27] [cursor=pointer]:
+              - option "Force-Directed (Organic)" [selected]
+              - option "Hierarchical (Top-Down)"
+              - option "Hierarchical (Left-Right)"
+              - option "Grid Structure"
+              - option "Concentric Radial"
+          - button "Labels On" [ref=e28]
+          - button "Filters" [ref=e29]
+          - button "Refresh" [ref=e32]
+    - generic [ref=e37]:
+      - generic [ref=e60]:
+        - generic [ref=e63]:
+          - button "Zoom In" [ref=e64]
+          - button "Zoom Out" [ref=e68]
+          - button "Fit View" [ref=e72]
+          - button "Toggle Physics Simulation" [ref=e79]
+          - button "Re-cluster Graph" [ref=e83]
+          - button "Toggle Labels" [ref=e89]
+        - generic [ref=e92]:
+          - generic [ref=e93]: Core Hubs
+          - generic [ref=e96]: Concepts
+          - generic [ref=e99]: Sources
+          - generic [ref=e102]: Notes
+        - generic:
+          - generic:
+            - paragraph: No notes match current filters
+            - paragraph: Try adjusting your search query or folder/tag selection
+      - region "AI Chat Assistant" [ref=e106]:
+        - generic [ref=e107]:
+          - generic [ref=e113]:
+            - generic [ref=e114]:
+              - heading "LLM Wiki AI" [level=2] [ref=e115]
+              - generic [ref=e116]: Mock
+            - generic [ref=e117]: Ready
+          - generic [ref=e120]:
+            - button "Clear chat history" [ref=e121] [cursor=pointer]
+            - button "Expand window" [ref=e125] [cursor=pointer]
+            - button "Minimize chat window" [ref=e131] [cursor=pointer]
+        - generic "Chat messages history" [ref=e133]:
+          - generic [ref=e139]:
+            - generic [ref=e140]: Welcome to your AI Wiki Assistant! I can help you navigate notes, discover related topics, and answer questions about your knowledge vault.
+            - generic [ref=e142]:
+              - generic [ref=e143]: 07:32 AM
+              - generic [ref=e144]: Simulated
+        - generic [ref=e146]:
+          - generic [ref=e147]: Suggested queries
+          - generic [ref=e152]:
+            - button "What is Object Oriented Programming (Python)?" [ref=e153] [cursor=pointer]
+            - button "What is LangGraph?" [ref=e154] [cursor=pointer]
+            - button "What is npx Execution on Windows?" [ref=e155] [cursor=pointer]
+        - generic [ref=e157]:
+          - textbox "Ask a question about the graph... (Enter to send, Shift+Enter for newline)" [active] [ref=e158]
+          - button "Send message" [disabled] [ref=e160]
+  - button "Open Next.js Dev Tools" [ref=e56] [cursor=pointer]
+  - alert [ref=e163]

@@ -10,6 +10,12 @@
 
 ## Clarifications
 
+### Session 2026-10-19
+- Q: How should the suggested prompts area visually present the error state and retry action when fetching from /random-topics fails? → A: Display an inline error notice (e.g., "Failed to load suggested topics") alongside a compact "Retry" button.
+- Q: How should the Next.js API route (`/random-topics`) respond when the live backend is unreachable or returns an error? → A: Return HTTP 502 Bad Gateway with a JSON error payload (e.g., `{"error": "Failed to fetch topics from backend"}`).
+- Q: What should the suggested prompts area display while a retry request is actively in-flight? → A: Display skeleton loading chip placeholders while the retry request is in-flight.
+- Q: Should the "View Wiki Source" button in the node preview header open the GitHub link in a new browser tab or navigate within the same tab? → A: Open in a new tab (`target="_blank"`) to prevent loss of in-app graph state.
+
 ### Session 2026-10-10
 - Q: What should happen to the suggested prompts when a user submits a message? → A: They should be renewed by sending a GET request to `/random-topics` to retrieve a new list.
 - Q: How should the sources accordion be displayed by default when it receives the `sources` event? → A: Collapsed initially, expanding only if clicked.
@@ -19,7 +25,7 @@
 - Q: How should the user intentionally cancel an active request (abort the stream)? → A: Provide a "Stop generating" button replacing the submit button while streaming.
 
 ### Session 2026-10-09
-- Q: What should happen if the `/random-topics` endpoint fails or times out? → A: Show no suggested prompts.
+- Q: What should happen if the `/random-topics` endpoint fails or times out? → A: Display an inline error notice with a retry button to re-fetch /random-topics (Superseded on 2026-10-19; formerly: Show no suggested prompts).
 - Q: What should be displayed in the suggested prompts area while the topics are being fetched from the endpoint? → A: Show skeleton loading placeholders for the chips.
 - Q: When the Chat Widget is opened into the standard panel, how should it visually behave if the Note Preview is also open on the right side? → A: Overlay: The chat panel floats on top of the note preview.
 - Q: What is the preferred UI method to clearly indicate to users that chat responses are purely simulated in this prototype phase? → A: Badge: A small 'Simulated' badge next to the timestamp on each assistant message.
@@ -45,6 +51,7 @@ Users need to be able to open, collapse, and expand the chat widget without inte
 1. **Given** the chat is minimized as a launcher, **When** the user clicks it, **Then** the chat smoothly animates into a standard panel and displays a welcome message and suggested prompts.
 2. **Given** the chat is in standard mode, **When** the user clicks the "Expand" button, **Then** the panel transitions to an expanded overlay.
 3. **Given** the chat is open, **When** the user clicks the "Minimize" button, **Then** the chat collapses into the launcher without losing any internal state.
+4. **Given** the chat is opened but the `/random-topics` live backend endpoint fails or times out, **When** viewed, **Then** an inline error notice with a compact "Retry" button is displayed instead of dummy topics, and clicking "Retry" displays skeleton loaders while re-sending a GET request to `/random-topics`.
 
 ---
 
@@ -82,7 +89,8 @@ Users should not lose their chat history or unsent draft if they minimize the wi
 - **Message Length Limit**: The system enforces a hard 2000-character limit on the composer input field to prevent UI breakage and performance issues.
 - **Disabled Storage**: If `localStorage` or `sessionStorage` are disabled or inaccessible, the widget degrades gracefully by using in-memory state (history will not survive a refresh) and displays a one-time non-blocking warning toast.
 - **Mobile Expanded Overlay**: When expanded on mobile devices, the widget acts as a modal overlay, blocking background graph interactions to prevent accidental layout shifts or navigation.
-- **Endpoint Failure**: If the `/random-topics` endpoint fails or times out when fetching suggested prompts, the system gracefully degrades by showing no suggested prompts instead of crashing.
+- **Endpoint Failure**: If the `/random-topics` endpoint fails or times out when fetching suggested prompts, the system gracefully degrades by displaying an inline error notice (e.g., "Failed to load suggested topics") with a compact "Retry" button rather than crashing or falling back to dummy topics. While retrying, skeleton loading chip placeholders are shown. If the live backend is unreachable or returns an error, the `/random-topics` route returns HTTP 502 Bad Gateway with a JSON error payload (`{"error": "Failed to fetch topics from backend"}`).
+- **Missing Node Path**: If the selected node's `path` property is empty or unavailable, the "View Wiki Source" button is hidden from the node preview header to avoid linking to an invalid URL.
 
 ## Requirements *(mandatory)*
 
@@ -92,7 +100,7 @@ Users should not lose their chat history or unsent draft if they minimize the wi
 - **FR-002**: The system MUST animate transitions between minimized, standard, and expanded chat states (respecting `prefers-reduced-motion`).
 - **FR-003**: The chat widget MUST display a header containing an expand/restore control, a title ("LLM Wiki AI"), and a minimize control.
 - **FR-004**: The system MUST automatically insert a predefined welcome message the first time the chat is opened in a session.
-- **FR-005**: The system MUST fetch suggested topics dynamically via a GET request to `/random-topics` initially and after every user message submission, mapping the first 3 topics into prompt chips formatted as "What is {topic}?". While fetching, it MUST display skeleton loading placeholders.
+- **FR-005**: The system MUST fetch suggested topics dynamically via a GET request to `/random-topics` initially and after every user message submission, mapping the first 3 topics into prompt chips formatted as "What is {topic}?". All dummy suggested topics and static topic fallback lists MUST be removed. If topic retrieval from the live backend fails or returns an error (such as HTTP 502 Bad Gateway), the system MUST display an inline error notice with a compact "Retry" button allowing the user to trigger another GET request to `/random-topics`. While fetching or retrying, the system MUST display skeleton loading placeholders.
 - **FR-006**: The system MUST persist unsent drafts and layout preferences using `localStorage`.
 - **FR-007**: The system MUST persist chat message history within the active browser session using `sessionStorage`.
 - **FR-008**: The system MUST connect to the backend `/ask` endpoint, sending a POST request with `thread_id` and `user_input`. It MUST parse SSE events (`sources`, `token`, `done`, `error`).
@@ -104,6 +112,7 @@ Users should not lose their chat history or unsent draft if they minimize the wi
 - **FR-016**: The system MUST replace the submit button with a "Stop generating" button during active streaming, which triggers the AbortController to cancel the request.
 - **FR-010**: The chat UI MUST NOT reset or block interactions with the background graph canvas on desktop (but MUST act as a blocking modal overlay when fully expanded on mobile). When opened into the standard panel on desktop, the chat MUST float as an overlay on top of the note preview if it is open.
 - **FR-011**: The system MUST be fully accessible via keyboard, trapping focus appropriately when necessary.
+- **FR-017**: The node preview panel header MUST include a "View Wiki Source" button that constructs a URL from the environment variable `ORIGINAL_WIKI_REPO` and the node's `path` property (format: `{ORIGINAL_WIKI_REPO}/{path}`) and opens it in a new browser tab. The button MUST be hidden when the node's `path` is empty or unavailable.
 
 ### Key Entities
 
@@ -118,6 +127,7 @@ Users should not lose their chat history or unsent draft if they minimize the wi
 - **SC-002**: An unsent draft (e.g., "hello") perfectly survives a minimize/reopen sequence and a page refresh.
 - **SC-003**: Users can submit a message and view a mock response using only the keyboard (`Tab`, `Enter`, `Shift+Enter`).
 - **SC-004**: A user interacting with the main graph (panning/zooming) does not cause the chat widget's state to reset or clear.
+- **SC-005**: When the `/random-topics` backend endpoint fails, the suggested queries area transitions to the error state displaying an inline error notice and a clickable "Retry" button within 200ms, without displaying hardcoded or dummy fallback topics.
 
 ## Assumptions
 

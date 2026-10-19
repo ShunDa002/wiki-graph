@@ -124,9 +124,9 @@
 
 ### Sub-phase 7.3: Uniform HUD Controls Across Layouts & Static Re-alignment (Completed)
 
-- [X] T042 [US4] Update HUD controls in `components/graph/ForceGraphCanvas.tsx` to display Play/Pause and Re-cluster buttons across all layouts; in static layouts, disable Play/Pause with an explanatory tooltip ("Physics simulation is inactive in static layouts").
-- [X] T043 [US4] Implement static layout re-alignment in `components/graph/ForceGraphCanvas.tsx` so clicking Re-cluster in static layouts re-computes coordinates and smoothly tweens nodes back to structured positions.
-- [X] T044 [P] [US4] Update component and integration tests in `tests/canvas-multilayout.test.tsx` to verify uniform HUD control rendering, disabled Play/Pause tooltip in static layouts, and Re-cluster re-alignment.
+- [X] T042 [US4] Update HUD controls in `components/graph/ForceGraphCanvas.tsx` to display Pause/Resume and Refresh Graph buttons across all layouts; in static layouts, disable simulation controls with an explanatory tooltip ("Physics simulation is inactive in static layouts").
+- [X] T043 [US4] Implement static layout re-alignment in `components/graph/ForceGraphCanvas.tsx` so clicking Refresh Graph in static layouts re-computes coordinates and smoothly tweens nodes back to structured positions.
+- [X] T044 [P] [US4] Update component and integration tests in `tests/canvas-multilayout.test.tsx` to verify uniform HUD control rendering, disabled simulation control tooltip in static layouts, and Refresh Graph re-alignment.
 - [X] T045 [US4] Validate uniform HUD controls and static layout re-alignment against `specs/001-wiki-graph-view/quickstart.md` across all 5 layouts.
 
 ---

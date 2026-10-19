@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { LayoutAlgorithm, useGraphStore } from '../../store/useGraphStore';
-import { Layers, SlidersHorizontal, Tag, Sparkles } from 'lucide-react';
+import { Layers, SlidersHorizontal, Tag, RefreshCw } from 'lucide-react';
 
 interface GraphToolbarProps {
   nodeCount: number;
@@ -94,10 +94,10 @@ export function GraphToolbar({
             id="manual-refresh-btn"
             onClick={onRefresh}
             disabled={isRefreshing}
-            title="Check freshness and refresh graph data"
+            title="Refresh Graph"
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-neutral-800 bg-neutral-950/60 hover:bg-neutral-800 text-neutral-300 hover:text-white transition font-medium disabled:opacity-50"
           >
-            <Sparkles className={`w-3.5 h-3.5 text-amber-400 ${isRefreshing ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`w-3.5 h-3.5 text-amber-400 ${isRefreshing ? 'animate-spin' : ''}`} />
             <span>Refresh</span>
           </button>
         )}

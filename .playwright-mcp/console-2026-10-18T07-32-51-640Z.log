@@ -1,0 +1,6 @@
+[     432ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_05y3oi5z9mc_3._.js:719
+[     585ms] [LOG] [HMR] connected @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_05y3oi5z9mc_3._.js:719
+[     692ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/favicon.ico:0
+[ 1673246ms] [ERROR] WebSocket connection to 'ws://localhost:3000/_next/hmr?id=a23SfSy1rIqj8pzprDV-H' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_1wygxxh5rwq0t._.js:16225
+[ 1674260ms] [ERROR] WebSocket connection to 'ws://localhost:3000/_next/hmr?id=a23SfSy1rIqj8pzprDV-H' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_1wygxxh5rwq0t._.js:16225
+[ 1675262ms] [ERROR] WebSocket connection to 'ws://localhost:3000/_next/hmr?id=a23SfSy1rIqj8pzprDV-H' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_1wygxxh5rwq0t._.js:16225

@@ -978,18 +978,17 @@ export function ForceGraphCanvas({ graphData, onSelectNode }: ForceGraphCanvasPr
             }}
             disabled={layoutAlgorithm !== 'force'}
             aria-disabled={layoutAlgorithm !== 'force'}
-            className={`p-2 rounded-xl transition ${
-              layoutAlgorithm === 'force'
+            className={`p-2 rounded-xl transition ${layoutAlgorithm === 'force'
                 ? isSimRunning
                   ? 'text-[#1f51ff] hover:bg-blue-500/10'
                   : 'text-neutral-500 hover:text-neutral-300 hover:bg-neutral-800/80'
                 : 'text-neutral-600 opacity-40 cursor-not-allowed'
-            }`}
+              }`}
             title={
               layoutAlgorithm === 'force'
                 ? isSimRunning
-                  ? 'Pause Physics Simulation'
-                  : 'Resume Physics Simulation'
+                  ? 'Pause'
+                  : 'Resume'
                 : 'Physics simulation is inactive in static layouts'
             }
             aria-label={
@@ -1007,14 +1006,8 @@ export function ForceGraphCanvas({ graphData, onSelectNode }: ForceGraphCanvasPr
           <button
             onClick={handleReheat}
             className="p-2 text-[#ffe600] hover:text-yellow-300 hover:bg-yellow-500/10 rounded-xl transition"
-            title={
-              layoutAlgorithm === 'force'
-                ? 'Re-cluster / Re-heat Physics Simulation'
-                : 'Re-cluster / Re-align Layout'
-            }
-            aria-label={
-              layoutAlgorithm === 'force' ? 'Re-cluster Graph' : 'Re-align Layout'
-            }
+            title="Refresh Graph"
+            aria-label="Refresh Graph"
           >
             <RefreshCw className="w-4 h-4" />
           </button>

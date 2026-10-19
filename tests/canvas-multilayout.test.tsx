@@ -86,8 +86,17 @@ describe('Multi-Layout Canvas Unification & Contextual Controls', () => {
     expect(screen.getByTitle('Hide Labels')).toBeInTheDocument();
 
     // Simulation controls must be visible in force mode
-    expect(screen.getByTitle(/Pause Physics Simulation/i)).toBeInTheDocument();
-    expect(screen.getByTitle(/Re-cluster \/ Re-heat Physics Simulation/i)).toBeInTheDocument();
+    expect(screen.getByTitle('Pause')).toBeInTheDocument();
+    expect(screen.getByTitle('Refresh Graph')).toBeInTheDocument();
+
+    // Toggling simulation switches tooltip between Pause and Resume
+    const pauseBtn = screen.getByTitle('Pause');
+    fireEvent.click(pauseBtn);
+    expect(screen.getByTitle('Resume')).toBeInTheDocument();
+
+    const resumeBtn = screen.getByTitle('Resume');
+    fireEvent.click(resumeBtn);
+    expect(screen.getByTitle('Pause')).toBeInTheDocument();
   });
 
   const staticLayouts: LayoutAlgorithm[] = ['dagre-tb', 'dagre-lr', 'grid', 'radial'];
@@ -110,7 +119,7 @@ describe('Multi-Layout Canvas Unification & Contextual Controls', () => {
       expect(simBtn).toBeInTheDocument();
       expect(simBtn).toBeDisabled();
 
-      const reclusterBtn = screen.getByTitle(/Re-cluster \/ Re-align Layout/i);
+      const reclusterBtn = screen.getByTitle('Refresh Graph');
       expect(reclusterBtn).toBeInTheDocument();
       expect(reclusterBtn).not.toBeDisabled();
 
@@ -123,10 +132,10 @@ describe('Multi-Layout Canvas Unification & Contextual Controls', () => {
     render(<ForceGraphCanvas graphData={mockGraphData} />);
 
     // Initially in force mode -> simulation button is enabled
-    const forceSimBtn = screen.getByTitle(/Pause Physics Simulation/i);
+    const forceSimBtn = screen.getByTitle('Pause');
     expect(forceSimBtn).toBeInTheDocument();
     expect(forceSimBtn).not.toBeDisabled();
-    expect(screen.getByTitle(/Re-cluster \/ Re-heat Physics Simulation/i)).toBeInTheDocument();
+    expect(screen.getByTitle('Refresh Graph')).toBeInTheDocument();
 
     // Switch to grid layout
     act(() => {
@@ -137,7 +146,7 @@ describe('Multi-Layout Canvas Unification & Contextual Controls', () => {
     const gridSimBtn = screen.getByTitle('Physics simulation is inactive in static layouts');
     expect(gridSimBtn).toBeInTheDocument();
     expect(gridSimBtn).toBeDisabled();
-    expect(screen.getByTitle(/Re-cluster \/ Re-align Layout/i)).toBeInTheDocument();
+    expect(screen.getByTitle('Refresh Graph')).toBeInTheDocument();
 
     // Switch back to force layout
     act(() => {
@@ -145,8 +154,8 @@ describe('Multi-Layout Canvas Unification & Contextual Controls', () => {
     });
 
     // In force layout -> simulation button is active again
-    expect(screen.getByTitle(/Pause Physics Simulation/i)).toBeInTheDocument();
-    expect(screen.getByTitle(/Re-cluster \/ Re-heat Physics Simulation/i)).toBeInTheDocument();
+    expect(screen.getByTitle('Pause')).toBeInTheDocument();
+    expect(screen.getByTitle('Refresh Graph')).toBeInTheDocument();
   });
 
   it('renders via unified Canvas engine through GraphCanvas for all layouts', () => {

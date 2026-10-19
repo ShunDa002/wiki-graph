@@ -1,9 +1,13 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 import {
   GraphResponseSchema,
   GraphNodeSchema,
   isSchemaVersionSupported,
   ApiError,
+  shouldRetryGraphQuery,
+  getGraphRetryDelay,
+  fetchFromBackend,
+  getGraph,
 } from '../lib/api';
 
 describe('API Schemas and Validation', () => {
@@ -145,3 +149,106 @@ describe('API Schemas and Validation', () => {
     expect(schemaErr.schemaVersion).toBe('2.0.0');
   });
 });
+
+describe('Startup Retry Policy & Query Helpers', () => {
+  it('shouldRetryGraphQuery retries on service unavailable or network errors', () => {
+    const unavailableErr = new ApiError('Offline', { isUnavailable: true, status: 503 });
+    expect(shouldRetryGraphQuery(0, unavailableErr, 4)).toBe(true);
+    expect(shouldRetryGraphQuery(1, unavailableErr, 4)).toBe(true);
+    expect(shouldRetryGraphQuery(3, unavailableErr, 4)).toBe(true);
+    expect(shouldRetryGraphQuery(4, unavailableErr, 4)).toBe(false);
+
+    const networkErr = new Error('Failed to fetch');
+    expect(shouldRetryGraphQuery(0, networkErr, 4)).toBe(true);
+    expect(shouldRetryGraphQuery(4, networkErr, 4)).toBe(false);
+  });
+
+  it('shouldRetryGraphQuery does not retry on unsupported schema or 4xx client errors', () => {
+    const schemaErr = new ApiError('Schema version mismatch', {
+      isUnsupportedSchema: true,
+      schemaVersion: '2.0.0',
+    });
+    expect(shouldRetryGraphQuery(0, schemaErr, 4)).toBe(false);
+
+    const notFoundErr = new ApiError('Not found', { status: 404 });
+    expect(shouldRetryGraphQuery(0, notFoundErr, 4)).toBe(false);
+
+    const unauthorizedErr = new ApiError('Unauthorized', { status: 401 });
+    expect(shouldRetryGraphQuery(0, unauthorizedErr, 4)).toBe(false);
+  });
+
+  it('getGraphRetryDelay calculates delays spaced by several seconds', () => {
+    expect(getGraphRetryDelay(0)).toBe(2000);
+    expect(getGraphRetryDelay(1)).toBe(3000);
+    expect(getGraphRetryDelay(2)).toBe(4000);
+    expect(getGraphRetryDelay(3)).toBe(5000);
+    expect(getGraphRetryDelay(10)).toBe(5000); // capped at 5s
+  });
+});
+
+describe('fetchFromBackend and getGraph Retry Behavior', () => {
+  const originalFetch = globalThis.fetch;
+
+  afterEach(() => {
+    globalThis.fetch = originalFetch;
+    vi.restoreAllMocks();
+  });
+
+  it('fetchFromBackend retries transient 502/503 errors when retry options are provided', async () => {
+    let callCount = 0;
+
+    globalThis.fetch = vi.fn().mockImplementation(async () => {
+      callCount++;
+      if (callCount < 3) {
+        return new Response('Bad Gateway', { status: 502, statusText: 'Bad Gateway' });
+      }
+      return new Response(JSON.stringify({ ok: true }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    });
+
+    const res = await fetchFromBackend('/test', undefined, {
+      retries: 3,
+      retryDelayMs: 10,
+      backoffFactor: 1,
+    });
+
+    expect(res.status).toBe(200);
+    expect(callCount).toBe(3);
+  });
+
+  it('getGraph succeeds when transient failure resolves within retries', async () => {
+    let callCount = 0;
+
+    const validPayload = {
+      schemaVersion: '1.0.0',
+      generatedAt: '2026-10-10T12:00:00Z',
+      sourceVersion: 'v1.0.0',
+      nodes: [],
+      edges: [],
+      unresolvedLinks: [],
+    };
+
+    globalThis.fetch = vi.fn().mockImplementation(async () => {
+      callCount++;
+      if (callCount === 1) {
+        return new Response('Gateway Offline', { status: 503, statusText: 'Service Unavailable' });
+      }
+      return new Response(JSON.stringify(validPayload), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    });
+
+    const graph = await getGraph({
+      retries: 2,
+      retryDelayMs: 10,
+      backoffFactor: 1,
+    });
+
+    expect(graph.schemaVersion).toBe('1.0.0');
+    expect(callCount).toBe(2);
+  });
+});
+

@@ -1,3 +1,4 @@
+import '@testing-library/jest-dom/vitest';
 import React from 'react';
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
@@ -5,7 +6,8 @@ import { ErrorPanel } from '../components/graph/ErrorPanel';
 import { SearchBox } from '../components/graph/SearchBox';
 import { FilterPanel } from '../components/graph/FilterPanel';
 import { NodePreview } from '../components/graph/NodePreview';
-import { ApiError, GraphNode, GraphResponse, GraphResponseSchema } from '../lib/api';
+import { GraphToolbar } from '../components/graph/GraphToolbar';
+import { ApiError, GraphNode, GraphNodeSchema, GraphResponse, GraphResponseSchema } from '../lib/api';
 
 describe('ErrorPanel', () => {
   it('renders Service Unavailable error and calls onRetry when clicked', () => {
@@ -79,8 +81,30 @@ describe('FilterPanel', () => {
   });
 });
 
+describe('GraphToolbar', () => {
+  it('renders note/edge metrics and calls onRefresh when Refresh Graph button is clicked', () => {
+    const onRefresh = vi.fn();
+    render(
+      <GraphToolbar
+        nodeCount={42}
+        edgeCount={108}
+        onRefresh={onRefresh}
+        isRefreshing={false}
+      />
+    );
+
+    expect(screen.getByText('42')).toBeInTheDocument();
+    expect(screen.getByText('108')).toBeInTheDocument();
+
+    const refreshBtn = screen.getByTitle('Refresh Graph');
+    expect(refreshBtn).toBeInTheDocument();
+    fireEvent.click(refreshBtn);
+    expect(onRefresh).toHaveBeenCalledTimes(1);
+  });
+});
+
 describe('NodePreview', () => {
-  const mockNode: GraphNode = {
+  const mockNode: GraphNode = GraphNodeSchema.parse({
     id: 'test-node',
     label: 'Test Node',
     type: 'note',
@@ -96,7 +120,7 @@ describe('NodePreview', () => {
       outgoingCount: 7,
       isOrphan: false,
     },
-  };
+  });
 
   it('renders note details, excerpt, link counts and handles close', () => {
     const onClose = vi.fn();
@@ -144,6 +168,76 @@ describe('NodePreview', () => {
     );
 
     consoleErrorSpy.mockRestore();
+  });
+
+  it('renders View Wiki Source button linking to original repo when path and env variable are present', () => {
+    const originalEnv = process.env.NEXT_PUBLIC_ORIGINAL_WIKI_REPO;
+    process.env.NEXT_PUBLIC_ORIGINAL_WIKI_REPO = 'https://github.com/ShunDa002/My-LLM-Wiki/tree/main/wiki';
+
+    render(
+      <NodePreview
+        node={mockNode}
+        onClose={() => {}}
+        onSelectNode={() => {}}
+      />
+    );
+
+    const sourceBtn = screen.getByRole('link', { name: /view original wiki source on github/i });
+    expect(sourceBtn).toBeInTheDocument();
+    expect(sourceBtn).toHaveAttribute(
+      'href',
+      'https://github.com/ShunDa002/My-LLM-Wiki/tree/main/wiki/concepts/nn.md'
+    );
+    expect(sourceBtn).toHaveAttribute('target', '_blank');
+    expect(sourceBtn).toHaveAttribute('rel', 'noopener noreferrer');
+
+    process.env.NEXT_PUBLIC_ORIGINAL_WIKI_REPO = originalEnv;
+  });
+
+  it('hides View Wiki Source button when path is empty or falsy', () => {
+    const originalEnv = process.env.NEXT_PUBLIC_ORIGINAL_WIKI_REPO;
+    process.env.NEXT_PUBLIC_ORIGINAL_WIKI_REPO = 'https://github.com/ShunDa002/My-LLM-Wiki/tree/main/wiki';
+
+    const nodeWithoutPath: GraphNode = {
+      ...mockNode,
+      metadata: {
+        ...mockNode.metadata,
+        path: '',
+      },
+    };
+
+    render(
+      <NodePreview
+        node={nodeWithoutPath}
+        onClose={() => {}}
+        onSelectNode={() => {}}
+      />
+    );
+
+    expect(
+      screen.queryByRole('link', { name: /view original wiki source on github/i })
+    ).not.toBeInTheDocument();
+
+    process.env.NEXT_PUBLIC_ORIGINAL_WIKI_REPO = originalEnv;
+  });
+
+  it('hides View Wiki Source button when NEXT_PUBLIC_ORIGINAL_WIKI_REPO is unset', () => {
+    const originalEnv = process.env.NEXT_PUBLIC_ORIGINAL_WIKI_REPO;
+    delete process.env.NEXT_PUBLIC_ORIGINAL_WIKI_REPO;
+
+    render(
+      <NodePreview
+        node={mockNode}
+        onClose={() => {}}
+        onSelectNode={() => {}}
+      />
+    );
+
+    expect(
+      screen.queryByRole('link', { name: /view original wiki source on github/i })
+    ).not.toBeInTheDocument();
+
+    process.env.NEXT_PUBLIC_ORIGINAL_WIKI_REPO = originalEnv;
   });
 });
 
@@ -204,12 +298,12 @@ describe('ForceGraphCanvas', () => {
     expect(screen.getByTitle('Zoom In')).toBeInTheDocument();
     expect(screen.getByTitle('Zoom Out')).toBeInTheDocument();
     expect(screen.getByTitle('Fit View / Reset Camera')).toBeInTheDocument();
-    expect(screen.getByTitle(/Re-cluster/i)).toBeInTheDocument();
+    expect(screen.getByTitle('Refresh Graph')).toBeInTheDocument();
 
     const zoomInBtn = screen.getByTitle('Zoom In');
     fireEvent.click(zoomInBtn);
 
-    const reclusterBtn = screen.getByTitle(/Re-cluster/i);
+    const reclusterBtn = screen.getByTitle('Refresh Graph');
     fireEvent.click(reclusterBtn);
   });
 });

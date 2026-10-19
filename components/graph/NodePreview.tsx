@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { GraphNode, UnresolvedLink } from '../../lib/api';
-import { X, ArrowRight, ArrowLeft, AlertCircle, FileText, Bookmark } from 'lucide-react';
+import { X, ArrowRight, ArrowLeft, AlertCircle, FileText, Bookmark, ExternalLink } from 'lucide-react';
 
 interface NodePreviewProps {
   node: GraphNode | null;
@@ -25,6 +25,12 @@ export function NodePreview({
 
   const { title, path, folder, tags, aliases, excerpt, incomingCount, outgoingCount, isOrphan } =
     node.metadata;
+
+  const repoBaseUrl = process.env.NEXT_PUBLIC_ORIGINAL_WIKI_REPO;
+  const wikiSourceUrl =
+    repoBaseUrl && path && path.trim()
+      ? `${repoBaseUrl.replace(/\/+$/, '')}/${path.trim().replace(/^\/+/, '')}`
+      : null;
 
   return (
     <aside
@@ -57,14 +63,30 @@ export function NodePreview({
             </p>
           )}
         </div>
-        <button
-          id="close-preview-btn"
-          onClick={onClose}
-          className="text-neutral-400 hover:text-white p-1.5 rounded-xl hover:bg-neutral-800 transition flex-shrink-0"
-          title="Close preview"
-        >
-          <X className="w-4 h-4" />
-        </button>
+        <div className="flex items-center gap-1 flex-shrink-0">
+          {wikiSourceUrl && (
+            <a
+              id="view-wiki-source-btn"
+              href={wikiSourceUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-neutral-400 hover:text-white p-1.5 rounded-xl hover:bg-neutral-800 transition flex items-center justify-center"
+              title="View original wiki source on GitHub"
+              aria-label="View original wiki source on GitHub"
+            >
+              <ExternalLink className="w-4 h-4" />
+            </a>
+          )}
+          <button
+            id="close-preview-btn"
+            onClick={onClose}
+            className="text-neutral-400 hover:text-white p-1.5 rounded-xl hover:bg-neutral-800 transition"
+            title="Close preview"
+            aria-label="Close preview"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
       </div>
 
       {/* Tags & Aliases */}

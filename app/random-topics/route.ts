@@ -1,17 +1,5 @@
 export const dynamic = 'force-dynamic';
 
-export const DEFAULT_TOPICS = [
-  'LangChain',
-  'Agentic AI',
-  'Asynchronous Programming',
-  'React Hooks',
-  'useState (React)',
-  'useEffect (React)',
-  'LangSmith',
-  'LangGraph',
-  'LangServe',
-] as const;
-
 interface TopicsResponse {
   topics: string[];
 }
@@ -67,12 +55,14 @@ export async function GET() {
         }
       }
     } catch {
-      // The backend is unavailable, took too long, returned invalid JSON,
-      // or does not provide /random-topics. Use the default topics below.
+      // Backend is unavailable, timed out, or returned invalid JSON
     } finally {
       clearTimeout(timeoutId);
     }
   }
 
-  return Response.json(DEFAULT_TOPICS);
+  return Response.json(
+    { error: 'Failed to fetch topics from backend' },
+    { status: 502 }
+  );
 }

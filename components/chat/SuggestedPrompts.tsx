@@ -1,28 +1,13 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { Sparkles } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Sparkles, RotateCcw } from 'lucide-react';
 
 interface SuggestedPromptsProps {
   onSelectPrompt: (prompt: string) => void;
   disabled?: boolean;
   refreshTrigger?: number | string;
 }
-
-export const DEFAULT_SUGGESTED_TOPICS = [
-  'Graph Layouts',
-  'Wikilinks',
-  'Obsidian Notes',
-  'Knowledge Vaults',
-  'Semantic Search',
-  'Cytoscape Engine',
-  'Markdown Parsing',
-  'Tag Filtering',
-  'Note Previews',
-  'Vector Embeddings',
-  'Backlinks Analysis',
-  'Clustering Algorithms',
-];
 
 /**
  * Extracts and cleans topic strings from various API response shapes
@@ -80,6 +65,11 @@ export const SuggestedPrompts: React.FC<SuggestedPromptsProps> = ({
   const [prompts, setPrompts] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
+  const [retryTrigger, setRetryTrigger] = useState(0);
+
+  const handleRetry = useCallback(() => {
+    setRetryTrigger((prev) => prev + 1);
+  }, []);
 
   useEffect(() => {
     let isMounted = true;
@@ -140,12 +130,12 @@ export const SuggestedPrompts: React.FC<SuggestedPromptsProps> = ({
           rawTopics = extractTopicsList(data);
         }
 
-        // If candidates failed or returned empty list, fall back to default topics
-        if (rawTopics.length === 0) {
-          rawTopics = DEFAULT_SUGGESTED_TOPICS;
-        }
+        if (!isMounted) return;
 
-        if (isMounted) {
+        if (rawTopics.length === 0) {
+          setHasError(true);
+          setPrompts([]);
+        } else {
           // Shuffle and pick top 3
           const shuffled = [...rawTopics].sort(() => 0.5 - Math.random());
           const selectedPrompts = shuffled
@@ -153,13 +143,18 @@ export const SuggestedPrompts: React.FC<SuggestedPromptsProps> = ({
             .map(formatTopicToPrompt)
             .filter(Boolean);
 
-          setPrompts(selectedPrompts);
+          if (selectedPrompts.length === 0) {
+            setHasError(true);
+            setPrompts([]);
+          } else {
+            setPrompts(selectedPrompts);
+            setHasError(false);
+          }
         }
       } catch {
         if (isMounted) {
-          // Even on unexpected error, show default fallback prompts rather than an empty widget
-          const shuffled = [...DEFAULT_SUGGESTED_TOPICS].sort(() => 0.5 - Math.random());
-          setPrompts(shuffled.slice(0, 3).map(formatTopicToPrompt));
+          setHasError(true);
+          setPrompts([]);
         }
       } finally {
         if (isMounted) {
@@ -174,11 +169,7 @@ export const SuggestedPrompts: React.FC<SuggestedPromptsProps> = ({
       isMounted = false;
       abortController.abort();
     };
-  }, [refreshTrigger]);
-
-  if (hasError || (!isLoading && prompts.length === 0)) {
-    return null; // Show no suggested prompts on error or if empty
-  }
+  }, [refreshTrigger, retryTrigger]);
 
   return (
     <div className="px-4 py-2 border-t border-neutral-800/60 bg-neutral-900/40">
@@ -186,15 +177,30 @@ export const SuggestedPrompts: React.FC<SuggestedPromptsProps> = ({
         <Sparkles className="w-3 h-3 text-indigo-400" />
         <span>Suggested queries</span>
       </div>
-      <div className="flex flex-wrap gap-1.5">
-        {isLoading ? (
-          <>
-            <div className="h-7 w-32 bg-neutral-800/50 rounded-full animate-pulse border border-neutral-700/60" />
-            <div className="h-7 w-24 bg-neutral-800/50 rounded-full animate-pulse border border-neutral-700/60" />
-            <div className="h-7 w-40 bg-neutral-800/50 rounded-full animate-pulse border border-neutral-700/60" />
-          </>
-        ) : (
-          prompts.map((prompt) => (
+      {isLoading ? (
+        <div className="flex flex-wrap gap-1.5">
+          <div className="h-7 w-32 bg-neutral-800/50 rounded-full animate-pulse border border-neutral-700/60" />
+          <div className="h-7 w-24 bg-neutral-800/50 rounded-full animate-pulse border border-neutral-700/60" />
+          <div className="h-7 w-40 bg-neutral-800/50 rounded-full animate-pulse border border-neutral-700/60" />
+        </div>
+      ) : hasError || prompts.length === 0 ? (
+        <div className="flex items-center justify-between gap-2 py-0.5">
+          <span className="text-[11px] text-neutral-400">
+            Failed to load suggested topics
+          </span>
+          <button
+            type="button"
+            onClick={handleRetry}
+            disabled={disabled}
+            className="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-medium rounded-md bg-neutral-800 hover:bg-neutral-700 text-neutral-200 hover:text-white border border-neutral-700/80 transition-all cursor-pointer disabled:opacity-50 disabled:pointer-events-none"
+          >
+            <RotateCcw className="w-3 h-3 text-neutral-400" />
+            <span>Retry</span>
+          </button>
+        </div>
+      ) : (
+        <div className="flex flex-wrap gap-1.5">
+          {prompts.map((prompt) => (
             <button
               key={prompt}
               type="button"
@@ -204,9 +210,9 @@ export const SuggestedPrompts: React.FC<SuggestedPromptsProps> = ({
             >
               {prompt}
             </button>
-          ))
-        )}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };

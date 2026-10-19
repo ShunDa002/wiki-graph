@@ -284,42 +284,73 @@ export function getApiBaseUrl(): string {
   ).replace(/\/+$/, '');
 }
 
+export interface FetchBackendOptions {
+  /** Maximum number of retry attempts when endpoints fail or return 502/503/504. Defaults to 0. */
+  retries?: number;
+  /** Initial delay before the first retry in milliseconds. Defaults to 1000ms. */
+  retryDelayMs?: number;
+  /** Multiplier for delay between successive retries. Defaults to 1.5. */
+  backoffFactor?: number;
+}
+
 /**
  * Resilient fetch that tries candidate backend endpoints, including the
- * same-origin Next.js proxy.
+ * same-origin Next.js proxy, with optional retries and backoff delay.
  */
 export async function fetchFromBackend(
   path: string,
-  init?: RequestInit
+  init?: RequestInit,
+  options?: FetchBackendOptions
 ): Promise<Response> {
-  const candidates = getCandidateBaseUrls();
-  let lastError: unknown = null;
-  let lastResponse: Response | null = null;
+  const maxRetries = Math.max(0, options?.retries ?? 0);
+  const initialDelay = Math.max(0, options?.retryDelayMs ?? 1000);
+  const backoff = Math.max(1, options?.backoffFactor ?? 1.5);
 
-  for (const base of candidates) {
-    try {
-      const url = `${base}${path.startsWith('/') ? path : `/${path}`}`;
-      const response = await fetch(url, init);
+  let attempt = 0;
 
-      if (
-        response.status === 502 ||
-        response.status === 503 ||
-        response.status === 504
-      ) {
-        lastResponse = response;
-        continue;
+  while (true) {
+    const candidates = getCandidateBaseUrls();
+    let lastError: unknown = null;
+    let lastResponse: Response | null = null;
+
+    for (const base of candidates) {
+      try {
+        const url = `${base}${path.startsWith('/') ? path : `/${path}`}`;
+        const response = await fetch(url, init);
+
+        if (
+          response.status === 502 ||
+          response.status === 503 ||
+          response.status === 504
+        ) {
+          lastResponse = response;
+          continue;
+        }
+
+        cachedWorkingBaseUrl = base;
+        return response;
+      } catch (error) {
+        lastError = error;
       }
-
-      cachedWorkingBaseUrl = base;
-      return response;
-    } catch (error) {
-      lastError = error;
     }
+
+    if (lastResponse && ![502, 503, 504].includes(lastResponse.status)) {
+      return lastResponse;
+    }
+
+    if (attempt < maxRetries) {
+      cachedWorkingBaseUrl = null;
+      const delayMs = initialDelay * Math.pow(backoff, attempt);
+      await new Promise((resolve) => setTimeout(resolve, delayMs));
+      attempt++;
+      continue;
+    }
+
+    cachedWorkingBaseUrl = null;
+    if (lastResponse) return lastResponse;
+
+    throw lastError || new Error('All backend endpoints failed');
   }
-
-  if (lastResponse) return lastResponse;
-
-  throw lastError || new Error('All backend endpoints failed');
 }
 
 export class ApiError extends Error {
@@ -357,15 +388,58 @@ async function readJson(response: Response, context: string): Promise<unknown> {
   }
 }
 
+export type GetGraphOptions = FetchBackendOptions;
+
+/**
+ * Determines whether a failed graph query should be retried.
+ * Retries on transient service unavailability (502, 503, 504, network errors).
+ * Does not retry on schema incompatibilities or 4xx client errors.
+ */
+export function shouldRetryGraphQuery(
+  failureCount: number,
+  error: unknown,
+  maxRetries = 4
+): boolean {
+  if (failureCount >= maxRetries) {
+    return false;
+  }
+
+  if (error instanceof ApiError) {
+    if (error.isUnsupportedSchema) {
+      return false;
+    }
+    if (error.status && error.status >= 400 && error.status < 500) {
+      return false;
+    }
+    if (error.isUnavailable) {
+      return true;
+    }
+  }
+
+  return true;
+}
+
+/**
+ * Calculates delay for graph query retries in milliseconds.
+ * Spaced out by several seconds (e.g. 2s, 3s, 4s, 5s) to tolerate backend startup.
+ */
+export function getGraphRetryDelay(attemptIndex: number): number {
+  return Math.min(2000 + attemptIndex * 1000, 5000);
+}
+
 /** Fetch the full graph from the FastAPI backend. */
-export async function getGraph(): Promise<GraphResponse> {
+export async function getGraph(options?: GetGraphOptions): Promise<GraphResponse> {
   let response: Response;
 
   try {
-    response = await fetchFromBackend('/graph', {
-      headers: { Accept: 'application/json' },
-      cache: 'no-store',
-    });
+    response = await fetchFromBackend(
+      '/graph',
+      {
+        headers: { Accept: 'application/json' },
+        cache: 'no-store',
+      },
+      options
+    );
   } catch {
     throw new ApiError(
       'Service Unavailable: Failed to connect to the graph backend service.',

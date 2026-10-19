@@ -106,55 +106,78 @@ description: "Task list template for feature implementation"
 
 ---
 
+## Phase 7: User Story 1 Enhancement - Live Topic Suggestions & Retry Recovery (Priority: P1)
+
+**Goal**: Eliminate all dummy topic fallbacks (`DEFAULT_SUGGESTED_TOPICS` and `DEFAULT_TOPICS`), return HTTP 502 Bad Gateway on backend proxy failures, and provide an inline error notice with a compact "Retry" button that re-fetches `/random-topics` with in-flight skeleton loaders.
+
+**Independent Test**: Load the chat widget when the live backend is unreachable; verify no dummy fallback topics appear, verify an inline error message and "Retry" button are displayed, verify clicking "Retry" triggers skeleton loaders while sending a new GET request to `/random-topics`, and verify that restoring the backend allows topics to load cleanly.
+
+### Implementation for User Story 1 Enhancement
+
+- [x] T027 [P] [US1] Remove DEFAULT_TOPICS and return HTTP 502 Bad Gateway with JSON error on backend failure in app/random-topics/route.ts
+- [x] T028 [US1] Remove DEFAULT_SUGGESTED_TOPICS fallback, implement error state with inline notice, and add compact "Retry" button with in-flight skeleton loading in components/chat/SuggestedPrompts.tsx
+- [x] T029 [P] [US1] Update tests to remove dummy fallback tests and add error notice, retry button click, and re-fetch tests in tests/suggested-prompts.test.tsx
+- [x] T030 [US1] Run unit tests via npm test to verify SuggestedPrompts component and route proxy pass cleanly in tests/suggested-prompts.test.tsx
+- [x] T031 [US1] Validate /random-topics failure and retry flow against specs/002-ai-chat-widget/quickstart.md Scenario 6
+
+---
+
+## Phase 8: View Wiki Source Button (FR-017)
+
+**Goal**: Add a "View Wiki Source" button to the node preview panel header that links to the original wiki Markdown file on GitHub, constructed from `NEXT_PUBLIC_ORIGINAL_WIKI_REPO` and the node's `path` metadata.
+
+**Independent Test**: Click any node in the graph to open the Node Preview panel; verify a "View Wiki Source" button is visible in the header; click it and verify a new browser tab opens with the correct GitHub URL (`{NEXT_PUBLIC_ORIGINAL_WIKI_REPO}/{node.path}`). Select a node with an empty `path` and verify the button is hidden.
+
+### Implementation for View Wiki Source Button
+
+- [x] T032 [US1] Rename `ORIGINAL_WIKI_REPO` to `NEXT_PUBLIC_ORIGINAL_WIKI_REPO` in `.env` so it is accessible from client components (Next.js convention requires `NEXT_PUBLIC_` prefix for browser-exposed variables)
+- [x] T033 [US1] Add "View Wiki Source" button to the header section of `components/graph/NodePreview.tsx`: read `process.env.NEXT_PUBLIC_ORIGINAL_WIKI_REPO`, construct URL as `{NEXT_PUBLIC_ORIGINAL_WIKI_REPO}/{path}` using the node's `metadata.path`, render as an anchor (`<a>`) with `target="_blank"` and `rel="noopener noreferrer"`, use the `ExternalLink` icon from `lucide-react`, and conditionally hide the button when `path` is empty or falsy
+- [x] T034 [US1] Validate View Wiki Source button against `specs/002-ai-chat-widget/quickstart.md` Scenario 7
+
+**Checkpoint**: View Wiki Source button is functional and validated.
+
+---
+
 ## Dependencies & Execution Order
 
 ### Phase Dependencies
 
-- **Setup (Phase 1)**: No dependencies - can start immediately
-- **Foundational (Phase 2)**: Depends on Setup completion - BLOCKS all user stories
-- **User Stories (Phase 3+)**: All depend on Foundational phase completion
-  - User stories can then proceed in sequentially (US1 → US2 → US3) or in parallel if isolated components are worked on.
-- **Polish (Final Phase)**: Depends on all desired user stories being complete
+- **Setup (Phase 1)**: Completed
+- **Foundational (Phase 2)**: Completed
+- **User Stories (Phase 3–5)**: Completed
+- **Polish (Phase 6)**: Completed
+- **Phase 7 (US1 Enhancement)**: Completed
+- **Phase 8 (FR-017 View Wiki Source)**: Depends on existing `NodePreview.tsx` and `.env` — no blockers from other phases
 
 ### User Story Dependencies
 
-- **User Story 1 (P1)**: Can start after Foundational (Phase 2)
-- **User Story 2 (P1)**: Integrates into US1 UI shell, so `ChatPanel.tsx` must exist.
-- **User Story 3 (P2)**: Integrates into `useChat.ts`, so US1 and US2 hook structure must exist.
+- **T032 (Env Rename)**: Renames `ORIGINAL_WIKI_REPO` → `NEXT_PUBLIC_ORIGINAL_WIKI_REPO` in `.env`. No code depends on the old name.
+- **T033 (Button Implementation)**: Depends on T032 (env variable must be renamed before the component can read it). Modifies `components/graph/NodePreview.tsx`.
+- **T034 (Scenario Validation)**: Depends on T032 + T033 being complete.
 
 ### Parallel Opportunities
 
-- All Foundational tasks [T002-T004] marked [P] can run in parallel
-- UI components in US1 [T005-T006] can run in parallel
-- UI components in US2 [T011-T015] can run in parallel
+- `T032` (`.env` rename) is a trivial one-line change and can be done instantly before T033.
+- T033 is the main implementation task — single file change to `NodePreview.tsx`.
+- T034 validates the completed feature.
 
 ---
 
-## Parallel Example: User Story 2
+## Parallel Example: View Wiki Source Button
 
 ```bash
-# Launch isolated UI components together:
-Task: "T012 [P] [US2] Create MessageComposer.tsx..."
-Task: "T013 [P] [US2] Create MessageBubble.tsx..."
-Task: "T014 [P] [US2] Create SuggestedPrompts.tsx..."
-Task: "T015 [P] [US2] Create TypingIndicator.tsx..."
+# Sequential — small feature, minimal parallelism:
+Task: "T032 [US1] Rename ORIGINAL_WIKI_REPO to NEXT_PUBLIC_ORIGINAL_WIKI_REPO in .env"
+Task: "T033 [US1] Add View Wiki Source button to components/graph/NodePreview.tsx"
+Task: "T034 [US1] Validate against quickstart.md Scenario 7"
 ```
 
 ---
 
 ## Implementation Strategy
 
-### MVP First (User Story 1 Only)
+### Incremental Delivery for Phase 8
 
-1. Complete Phase 1: Setup
-2. Complete Phase 2: Foundational
-3. Complete Phase 3: User Story 1
-4. **STOP and VALIDATE**: Test User Story 1 independently
-
-### Incremental Delivery
-
-1. Complete Setup + Foundational
-2. Add User Story 1 → Test UI shell
-3. Add User Story 2 → Test chatting capabilities
-4. Add User Story 3 → Test persistence
-5. Complete Polish phase
+1. **Step 1 (T032)**: Rename the environment variable in `.env` to use the `NEXT_PUBLIC_` prefix.
+2. **Step 2 (T033)**: Add the button to `NodePreview.tsx` header — conditionally rendered, opens in new tab, uses `ExternalLink` icon.
+3. **Step 3 (T034)**: Validate against `quickstart.md` Scenario 7 by clicking nodes and verifying the link URL and visibility behavior.

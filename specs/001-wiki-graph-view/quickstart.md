@@ -34,11 +34,11 @@
 
 ### 4. Uniform Canvas Overlay Controls
 - While in **Force-Directed (Organic)** layout:
-  - Verify bottom-left HUD controls display active Play/Pause (toggles physics simulation), Re-cluster (re-heats simulation with alpha=1.0), Fit View, Zoom In/Out, and Toggle Labels.
+  - Verify bottom-left HUD controls display active Pause/Resume (toggles physics simulation), Refresh Graph (re-heats simulation with alpha=1.0), Fit View, Zoom In/Out, and Toggle Labels.
 - While in **Hierarchical, Grid, or Radial** layouts:
-  - Verify the Play/Pause and Re-cluster buttons remain visible in the HUD for visual consistency.
-  - Verify Play/Pause is rendered disabled with a tooltip indicating physics simulation is inactive in static layouts.
-  - Verify clicking Re-cluster re-computes static layout coordinates and smoothly animates nodes back into their structured positions.
+  - Verify the Pause/Resume and Refresh Graph buttons remain visible in the HUD for visual consistency.
+  - Verify Pause/Resume is rendered disabled with a tooltip indicating physics simulation is inactive in static layouts.
+  - Verify clicking Refresh Graph re-computes static layout coordinates and smoothly animates nodes back into their structured positions.
 
 ### 5. Interactive Selection, Neighbor Glow, and Node Preview
 - Hover over any node in any layout: verify the node illuminates with a Neon Blue hover ring, connected edges illuminate in Neon Blue, and the hover tooltip card appears.

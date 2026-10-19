@@ -2,7 +2,12 @@
 
 import React, { useEffect, useCallback, useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { getGraph, getMetadata } from '../../lib/api';
+import {
+  getGraph,
+  getMetadata,
+  shouldRetryGraphQuery,
+  getGraphRetryDelay,
+} from '../../lib/api';
 import { useGraphStore } from '../../store/useGraphStore';
 import { GraphCanvas } from '../../components/graph/GraphCanvas';
 import { ErrorPanel } from '../../components/graph/ErrorPanel';
@@ -30,10 +35,12 @@ export default function GraphPage() {
 
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  // 1. Fetch graph data
-  const { data, isLoading, error, refetch } = useQuery({
+  // 1. Fetch graph data with backend startup retry tolerance
+  const { data, isLoading, error, refetch, failureCount } = useQuery({
     queryKey: ['graph'],
-    queryFn: getGraph,
+    queryFn: () => getGraph(),
+    retry: (count, err) => shouldRetryGraphQuery(count, err, 4),
+    retryDelay: (attemptIndex) => getGraphRetryDelay(attemptIndex),
   });
 
   // 2. Metadata Freshness Check on initial load (FR-011)
@@ -178,9 +185,6 @@ export default function GraphPage() {
           <h1 className="font-semibold text-lg text-white tracking-tight hidden sm:inline">
             LLM Wiki Graph
           </h1>
-          <span className="text-xs px-2.5 py-0.5 rounded-full bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 font-medium">
-            Neon Constellation
-          </span>
         </div>
 
         <div className="flex-1 max-w-sm">
@@ -207,7 +211,11 @@ export default function GraphPage() {
           <div className="absolute inset-0 flex items-center justify-center bg-[#060b18]/85 backdrop-blur-sm z-30">
             <div className="flex flex-col items-center space-y-3">
               <div className="w-8 h-8 border-2 border-[#00f0ff] border-t-transparent rounded-full animate-spin shadow-[0_0_12px_rgba(0,240,255,0.5)]" />
-              <p className="text-sm font-medium text-cyan-200">Loading knowledge graph...</p>
+              <p className="text-sm font-medium text-cyan-200">
+                {failureCount > 0
+                  ? `Connecting to backend service (attempt ${failureCount + 1}/5)...`
+                  : 'Loading knowledge graph...'}
+              </p>
             </div>
           </div>
         )}

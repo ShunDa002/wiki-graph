@@ -26,6 +26,12 @@ The global state for the chat widget, managed by a reducer.
 - `isTyping` (boolean): Whether the assistant is currently typing or waiting for a response.
 - `threadId` (string | null): The UUID for the current conversation session.
 
+### SuggestedPromptsState
+Component state managing dynamic prompt suggestions and retry recovery.
+- `prompts` (string[]): List of formatted query prompt chips (max 3, formatted as "What is {topic}?").
+- `isLoading` (boolean): Indicates whether a fetch or retry request to `/random-topics` is currently in progress.
+- `hasError` (boolean): Indicates whether topic retrieval from `/random-topics` failed (non-200, network error, or empty list).
+
 ## State Transitions
 
 ### Layout State (`mode`)
@@ -41,3 +47,9 @@ The global state for the chat widget, managed by a reducer.
 - Receive Sources: Update Assistant message `sources`.
 - Stream Done: Update Assistant message status to `complete`.
 - Stream Error: Update Assistant message status to `error` and set `error` text.
+
+### Suggested Prompts State
+- Mount / Message Submit: `isLoading = true`, `hasError = false` -> render skeleton loading placeholders.
+- Fetch Success (`200 OK` with topics): `prompts = formattedChips`, `isLoading = false`, `hasError = false` -> render prompt chips.
+- Fetch Failure (`502` / network error / empty): `prompts = []`, `isLoading = false`, `hasError = true` -> render inline error notice with compact "Retry" button.
+- Retry Click: `isLoading = true`, `hasError = false` -> render skeleton loading placeholders and dispatch new GET request to `/random-topics`.
