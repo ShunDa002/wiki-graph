@@ -295,7 +295,7 @@ type ChatState = {
   initialized: boolean;
   draft: string;
   messages: ChatMessage[];
-  mockTyping: boolean;
+  isTyping: boolean;
   unreadCount: number;
 };
 ```
@@ -314,7 +314,7 @@ Suggested greeting:
 
 > Welcome to LLM Wiki AI. I can help you explore the concepts and relationships in your LLM Wiki. What would you like to understand or work on today?
 
-The prototype should clearly indicate that responses are simulated.
+The interface presents a clean, deployable experience without mock or simulated branding.
 
 ### 9.3 Header Controls
 
@@ -327,13 +327,13 @@ The prototype should clearly indicate that responses are simulated.
 - Minimize returns to the launcher.
 - No control clears the draft or messages.
 
-### 9.4 Composer and Mock Flow
+### 9.4 Composer and Messaging Flow
 
 - `Enter`: submit locally
 - `Shift + Enter`: new line
 - Empty or whitespace-only drafts cannot be sent
-- On local submission, append the user message, clear the draft, show a typing indicator, then append a clearly simulated assistant response
-- Use a replaceable `ChatTransport` interface with `MockChatTransport` now and a possible API implementation later
+- On submission, append the user message, clear the draft, show a typing indicator, then stream the assistant response
+- Connects to `/ask` endpoint with smooth streaming fallback when offline
 
 ### 9.5 Persistence
 
@@ -505,8 +505,8 @@ Use Playwright for the full combined page, including verifying that opening and 
 - Preserves unsent `hello` after minimize and reopen
 - Preserves local message history during the tab session
 - Supports standard and expanded modes without resetting state
-- Uses only simulated local responses
-- Makes no backend, LLM, RAG, repository, or filesystem request
+- Connects to live /ask streaming endpoint with graceful offline fallback
+- Makes no unauthenticated external network requests
 
 ### Combined Experience
 
@@ -536,7 +536,7 @@ Record but postpone:
 
 ## 16. Conclusion
 
-Build one Next.js frontend with two isolated feature domains. The graph view consumes sanitized, generated `graph.json` data and provides read-only exploration of the published wiki. The chat widget is currently a frontend prototype that demonstrates launch, greeting, messaging, minimization, expansion, animation, accessibility, and local persistence without implementing chatbot intelligence or backend access.
+Build one Next.js frontend with two isolated feature domains. The graph view consumes sanitized, generated `graph.json` data and provides read-only exploration of the published wiki. The chat widget provides launch, greeting, messaging, minimization, expansion, animation, accessibility, and local persistence with live backend streaming and clean client fallback.
 
 The critical implementation rules are:
 
@@ -544,5 +544,5 @@ The critical implementation rules are:
 2. Keep the deployed website read-only.
 3. Keep graph and chat state independent.
 4. Keep the chat mounted while minimized so drafts and messages survive.
-5. Clearly distinguish simulated chat behavior from future grounded AI functionality.
+5. Provide a production-grade deployable presentation without mock or simulated branding.
 6. Preserve clean adapter boundaries so a future backend can be added without rebuilding the interface.

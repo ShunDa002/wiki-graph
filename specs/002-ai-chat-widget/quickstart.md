@@ -20,13 +20,12 @@ npm run dev
 4. Verify the chat panel opens, animates smoothly, and displays the predefined welcome message.
 5. Verify suggested topic chips (e.g., "What is [Topic]?") appear below the welcome message (or skeleton loaders if the `/random-topics` request is delayed).
 
-### Scenario 2: Sending a Local Mock Message
-*(Requires the mock backend or simulated endpoints)*
+### Scenario 2: Sending a Chat Message
 1. Type a message in the input composer (e.g., "Hello world").
 2. Press `Enter`.
 3. Verify the message is added to the UI immediately.
-4. Verify the typing indicator appears for a brief period (1-3 seconds).
-5. Verify the simulated streaming response appears incrementally in the message bubble.
+4. Verify the typing indicator appears for a brief period.
+5. Verify the streaming response appears incrementally in the message bubble.
 6. Verify a new set of suggested topics is fetched and displayed.
 
 ### Scenario 3: State Persistence
@@ -39,13 +38,13 @@ npm run dev
 7. Verify that the message history is restored.
 
 ### Scenario 4: Stop Generating
-1. Submit a long message to trigger a simulated long response.
+1. Submit a long message to trigger an extended streaming response.
 2. While the response is streaming, click the "Stop generating" button (which replaces the send button).
 3. Verify the stream halts immediately and the message bubble stops updating.
 4. Verify the "Stop generating" button reverts back to the standard submit button.
 
 ### Scenario 5: References & Sources
-1. Send a query that triggers a mocked source response.
+1. Send a query that returns sources (e.g., "What is useState?").
 2. Verify the response includes an accordion for sources, collapsed by default.
 3. Click the accordion to expand and view the list of retrieved pages.
 4. Click an inline citation `[1]` within the assistant's text.

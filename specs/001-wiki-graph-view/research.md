@@ -26,7 +26,7 @@
 - **Alternatives Considered**: Instant coordinate snapping (abrupt and disorienting).
 
 ## 6. Uniform Canvas Overlay Controls Across Layouts
-- **Decision**: Render simulation and layout controls (Pause/Resume, Refresh Graph) uniformly across all layout modes. In static layouts (Hierarchical, Grid, Radial), "Refresh Graph" re-computes and smoothly animates nodes back to structured layout coordinates, while simulation control is rendered in a disabled state with an explanatory tooltip ("Physics simulation is inactive in static layouts").
+- **Decision**: Render simulation and layout controls (Pause/Resume, Refresh Graph) uniformly across all layout modes. In static layouts (Hierarchical, Grid, Radial), "Refresh Graph" re-computes and smoothly animates nodes back to structured layout coordinates, while simulation control is rendered in a disabled state with an explanatory tooltip ("Physics engine is inactive in static layouts").
 - **Rationale**: Provides consistent visual UI across all graph views so the control HUD doesn't jarringly shift or hide buttons when changing layouts, while preserving strict static geometry without physics drift.
 - **Alternatives Considered**: Conditionally hiding buttons (created an inconsistent toolbar footprint across layouts and removed the ability for users to reset or re-align static layouts).
 

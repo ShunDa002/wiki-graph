@@ -7,7 +7,7 @@ export const initialChatState: ChatState = {
   draft: '',
   messages: [],
   isStreaming: false,
-  mockTyping: false,
+  isTyping: false,
   unreadCount: 0,
   storageWarning: null,
   threadId: '',
@@ -77,10 +77,10 @@ export function chatReducer(state: ChatState, action: ChatAction): ChatState {
       };
     }
 
-    case 'SET_MOCK_TYPING': {
+    case 'SET_TYPING': {
       return {
         ...state,
-        mockTyping: action.payload,
+        isTyping: action.payload,
       };
     }
 

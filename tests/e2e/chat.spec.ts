@@ -54,10 +54,9 @@ test.describe('AI Chat Widget UI', () => {
     const assistantResponse = page.locator('#chat-message-viewport').getByText(/Wiki information|Hello|prototype/i);
     await expect(assistantResponse.first()).toBeVisible({ timeout: 25000 });
 
-    // The welcome assistant message displays the 'Simulated' badge
-    const badge = page.locator('#message-simulated-badge');
-    await expect(badge.first()).toBeVisible();
-    await expect(badge.first()).toHaveText('Simulated');
+    // The welcome assistant message is visible
+    const welcome = page.locator('#chat-message-viewport').getByText(/Welcome to your AI Wiki Assistant/i);
+    await expect(welcome).toBeVisible();
   });
 
   test('Scenario 3: Draft and History Persistence', async ({ page }) => {

@@ -37,7 +37,7 @@
   - Verify bottom-left HUD controls display active Pause/Resume (toggles physics simulation), Refresh Graph (re-heats simulation with alpha=1.0), Fit View, Zoom In/Out, and Toggle Labels.
 - While in **Hierarchical, Grid, or Radial** layouts:
   - Verify the Pause/Resume and Refresh Graph buttons remain visible in the HUD for visual consistency.
-  - Verify Pause/Resume is rendered disabled with a tooltip indicating physics simulation is inactive in static layouts.
+  - Verify Pause/Resume is rendered disabled with a tooltip indicating physics engine is inactive in static layouts.
   - Verify clicking Refresh Graph re-computes static layout coordinates and smoothly animates nodes back into their structured positions.
 
 ### 5. Interactive Selection, Neighbor Glow, and Node Preview

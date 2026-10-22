@@ -57,11 +57,11 @@ description: "Task list template for feature implementation"
 
 ---
 
-## Phase 4: User Story 2 - Draft and Send Local Mock Messages (Priority: P1)
+## Phase 4: User Story 2 - Draft and Send Chat Messages (Priority: P1)
 
-**Goal**: Users need to type messages, submit them, and receive an immediate local simulated response.
+**Goal**: Users need to type messages, submit them, and receive an immediate streaming response.
 
-**Independent Test**: Type a message, press Enter, and observe the chat history update with a mock streaming response.
+**Independent Test**: Type a message, press Enter, and observe the chat history update with a streaming response.
 
 ### Implementation for User Story 2
 
@@ -83,7 +83,7 @@ description: "Task list template for feature implementation"
 
 **Goal**: Users should not lose their chat history or unsent draft if they minimize the widget or refresh the page.
 
-**Independent Test**: Type a draft, minimize the chat, reopen it to verify draft remains. Receive mock responses, refresh page, verify history is restored.
+**Independent Test**: Type a draft, minimize the chat, reopen it to verify draft remains. Receive assistant responses, refresh page, verify history is restored.
 
 ### Implementation for User Story 3
 
@@ -100,7 +100,7 @@ description: "Task list template for feature implementation"
 **Purpose**: Improvements that affect multiple user stories
 
 - [x] T023 [P] Add mobile overlay behavior and desktop overlay z-index behavior over note preview to `ChatWidget.tsx`
-- [x] T024 [P] Add 'Simulated' badge next to the timestamp on assistant messages in `MessageBubble.tsx`
+- [x] T024 [P] Remove 'Simulated' and 'Mock' badges from `MessageBubble.tsx` and `ChatHeader.tsx` to present a clean deployable user interface
 - [x] T025 [P] Implement keyboard accessibility and focus trapping in `ChatPanel.tsx` when the chat is expanded
 - [x] T026 Run `quickstart.md` validation scenarios manually to verify end-to-end functionality
 

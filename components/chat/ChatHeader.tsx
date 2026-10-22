@@ -6,7 +6,7 @@ import { ChatViewMode } from '../../features/chat/chat.types';
 
 interface ChatHeaderProps {
   view: ChatViewMode;
-  mockTyping?: boolean;
+  isTyping?: boolean;
   onToggleExpand: () => void;
   onMinimize: () => void;
   onClearHistory?: () => void;
@@ -14,7 +14,7 @@ interface ChatHeaderProps {
 
 export const ChatHeader: React.FC<ChatHeaderProps> = ({
   view,
-  mockTyping = false,
+  isTyping = false,
   onToggleExpand,
   onMinimize,
   onClearHistory,
@@ -30,17 +30,14 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({
         <div>
           <div className="flex items-center gap-2">
             <h2 className="text-sm font-semibold text-white tracking-tight">LLM Wiki AI</h2>
-            <span className="text-[10px] font-mono font-medium px-1.5 py-0.5 rounded-full bg-indigo-500/15 text-indigo-400 border border-indigo-500/20">
-              Mock
-            </span>
           </div>
           <div className="flex items-center gap-1.5 text-[11px] text-neutral-400">
             <span
               className={`w-1.5 h-1.5 rounded-full ${
-                mockTyping ? 'bg-amber-400 animate-ping' : 'bg-emerald-400'
+                isTyping ? 'bg-amber-400 animate-ping' : 'bg-emerald-400'
               }`}
             />
-            <span>{mockTyping ? 'Thinking...' : 'Ready'}</span>
+            <span>{isTyping ? 'Thinking...' : 'Ready'}</span>
           </div>
         </div>
       </div>

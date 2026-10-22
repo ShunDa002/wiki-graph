@@ -80,7 +80,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
     ? 'w-[94vw] sm:w-[680px] md:w-[760px] h-[82.8vh] sm:h-[648px] max-h-[calc(100vh-2.5rem)]'
     : 'w-[94vw] sm:w-[400px] md:w-[430px] h-[80vh] sm:h-[540px] max-h-[calc(100vh-2.5rem)]';
 
-  const isGenerating = state.isStreaming || state.mockTyping;
+  const isGenerating = state.isStreaming || state.isTyping;
   const userMessageCount = state.messages.filter((m) => m.role === 'user').length;
 
   return (
@@ -99,7 +99,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
       {/* Header */}
       <ChatHeader
         view={state.view}
-        mockTyping={isGenerating}
+        isTyping={isGenerating}
         onToggleExpand={handleToggleExpand}
         onMinimize={handleMinimize}
         onClearHistory={onClearHistory}
@@ -129,7 +129,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
       {/* Messages */}
       <MessageViewport
         messages={state.messages}
-        mockTyping={state.mockTyping}
+        isTyping={state.isTyping}
         isStreaming={state.isStreaming}
       />
 

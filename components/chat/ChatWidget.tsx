@@ -1,13 +1,13 @@
 'use client';
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { AnimatePresence } from 'motion/react';
 import { AlertCircle, X } from 'lucide-react';
 import { useChat } from '../../features/chat/useChat';
 import { ChatLauncher } from './ChatLauncher';
 import { ChatPanel } from './ChatPanel';
 
-export const ChatWidget: React.FC = () => {
+const ChatWidgetContent: React.FC = () => {
   const {
     state,
     setView,
@@ -140,4 +140,31 @@ export const ChatWidget: React.FC = () => {
       </div>
     </div>
   );
+};
+
+export const ChatWidget: React.FC = () => {
+  const [enabled, setEnabled] = useState(true);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('chat') === 'false') {
+        setEnabled(false);
+      }
+    }
+  }, []);
+
+  if (!enabled) {
+    return null;
+  }
+
+  // Prevent initial flash or initialization if ?chat=false is present on client mount
+  if (typeof window !== 'undefined') {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('chat') === 'false') {
+      return null;
+    }
+  }
+
+  return <ChatWidgetContent />;
 };

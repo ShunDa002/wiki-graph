@@ -28,10 +28,10 @@
 - Q: What should happen if the `/random-topics` endpoint fails or times out? → A: Display an inline error notice with a retry button to re-fetch /random-topics (Superseded on 2026-10-19; formerly: Show no suggested prompts).
 - Q: What should be displayed in the suggested prompts area while the topics are being fetched from the endpoint? → A: Show skeleton loading placeholders for the chips.
 - Q: When the Chat Widget is opened into the standard panel, how should it visually behave if the Note Preview is also open on the right side? → A: Overlay: The chat panel floats on top of the note preview.
-- Q: What is the preferred UI method to clearly indicate to users that chat responses are purely simulated in this prototype phase? → A: Badge: A small 'Simulated' badge next to the timestamp on each assistant message.
+- Q: What is the preferred UI method to clearly indicate to users that chat responses are purely simulated in this prototype phase? → A: None: To present a clean, deployable website, all 'Simulated' and 'Mock' badges and labels are removed from the user interface.
 
 ### Session 2026-10-07
-- Q: Should the mock transport layer introduce an artificial delay before responding? → A: Implement a random artificial delay (e.g., 1-3 seconds) to realistically simulate backend processing and validate the typing indicator.
+- Q: Should the transport layer introduce an artificial delay before responding? → A: Implement a realistic initial delay (e.g., 800ms) with typing indicators and smooth streaming chunking when in offline fallback mode.
 - Q: How should the widget handle browser environments where `localStorage` or `sessionStorage` is disabled? → A: Degrade gracefully by falling back to in-memory state (losing history on refresh) and showing a one-time non-blocking warning toast.
 - Q: How should the widget handle extremely long messages typed by the user? → A: Enforce a hard 2000-character limit on the composer input field to prevent abuse and UI breakage.
 - Q: How should the widget handle background graph interactions when the chat is fully expanded on mobile devices? → A: Treat the expanded mobile chat as a modal overlay; block background graph interactions entirely to prevent accidental navigation while typing.
@@ -55,17 +55,17 @@ Users need to be able to open, collapse, and expand the chat widget without inte
 
 ---
 
-### User Story 2 - Draft and Send Local Mock Messages (Priority: P1)
+### User Story 2 - Draft and Send Chat Messages (Priority: P1)
 
-Users need to type messages, submit them, and receive an immediate local simulated response.
+Users need to type messages, submit them, and receive an immediate streaming assistant response.
 
-**Why this priority**: Simulating chat interaction is the core functionality of this frontend prototype.
+**Why this priority**: Responsive chat interaction is the core functionality of the AI assistant.
 
-**Independent Test**: Can be fully tested by typing a message, pressing Enter, and observing the chat history update with a mock response.
+**Independent Test**: Can be fully tested by typing a message, pressing Enter, and observing the chat history update with an assistant response.
 
 **Acceptance Scenarios**:
 
-1. **Given** the chat panel is open, **When** the user types "hello" and presses Enter, **Then** the message is added to the history, the draft is cleared, a typing indicator appears, and a mock response is appended shortly after.
+1. **Given** the chat panel is open, **When** the user types "hello" and presses Enter, **Then** the message is added to the history, the draft is cleared, a typing indicator appears, and an assistant response is appended shortly after.
 2. **Given** the chat composer is focused, **When** the user presses Shift+Enter, **Then** a new line is added to the draft instead of submitting.
 3. **Given** the draft is empty or only whitespace, **When** the user presses Enter, **Then** no message is sent.
 
@@ -82,7 +82,7 @@ Users should not lose their chat history or unsent draft if they minimize the wi
 **Acceptance Scenarios**:
 
 1. **Given** the user has typed an unsent draft, **When** they minimize and reopen the chat, **Then** the draft text is fully preserved.
-2. **Given** the user has received mock responses, **When** they refresh the page, **Then** their chat history is restored from session storage.
+2. **Given** the user has received assistant responses, **When** they refresh the page, **Then** their chat history is restored from session storage.
 
 ### Edge Cases
 
@@ -98,7 +98,7 @@ Users should not lose their chat history or unsent draft if they minimize the wi
 
 - **FR-001**: The system MUST render a floating circular launcher in the bottom-right corner of the application shell.
 - **FR-002**: The system MUST animate transitions between minimized, standard, and expanded chat states (respecting `prefers-reduced-motion`).
-- **FR-003**: The chat widget MUST display a header containing an expand/restore control, a title ("LLM Wiki AI"), and a minimize control.
+- **FR-003**: The chat widget MUST display a header containing an expand/restore control, a title ("LLM Wiki AI"), and a minimize control, without any "Mock" badge.
 - **FR-004**: The system MUST automatically insert a predefined welcome message the first time the chat is opened in a session.
 - **FR-005**: The system MUST fetch suggested topics dynamically via a GET request to `/random-topics` initially and after every user message submission, mapping the first 3 topics into prompt chips formatted as "What is {topic}?". All dummy suggested topics and static topic fallback lists MUST be removed. If topic retrieval from the live backend fails or returns an error (such as HTTP 502 Bad Gateway), the system MUST display an inline error notice with a compact "Retry" button allowing the user to trigger another GET request to `/random-topics`. While fetching or retrying, the system MUST display skeleton loading placeholders.
 - **FR-006**: The system MUST persist unsent drafts and layout preferences using `localStorage`.
@@ -125,12 +125,12 @@ Users should not lose their chat history or unsent draft if they minimize the wi
 
 - **SC-001**: Visual transitions between chat states complete in 200-300ms smoothly on desktop devices.
 - **SC-002**: An unsent draft (e.g., "hello") perfectly survives a minimize/reopen sequence and a page refresh.
-- **SC-003**: Users can submit a message and view a mock response using only the keyboard (`Tab`, `Enter`, `Shift+Enter`).
+- **SC-003**: Users can submit a message and view an assistant response using only the keyboard (`Tab`, `Enter`, `Shift+Enter`).
 - **SC-004**: A user interacting with the main graph (panning/zooming) does not cause the chat widget's state to reset or clear.
 - **SC-005**: When the `/random-topics` backend endpoint fails, the suggested queries area transitions to the error state displaying an inline error notice and a clickable "Retry" button within 200ms, without displaying hardcoded or dummy fallback topics.
 
 ## Assumptions
 
-- The widget will eventually connect to a real RAG backend; therefore, a clear mock transport adapter boundary is required.
-- Session storage is adequate for history retention in this read-only static prototype (no remote user profiles or database synchronization are expected).
-- The chat responses in this phase are purely simulated (hardcoded or locally generated dummy text) and do not reflect real knowledge graph embeddings.
+- The widget connects to the `/ask` SSE streaming endpoint and falls back gracefully to client-side streaming generation when offline, presenting a clean deployable interface without mock or simulated branding.
+- Session storage is adequate for history retention in this static client environment.
+- The user interface does not display "Mock", "Simulated", or prototype labels, ensuring a production-grade user experience.

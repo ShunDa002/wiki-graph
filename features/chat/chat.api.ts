@@ -8,17 +8,19 @@ export function getCandidateEndpoints(customEndpoint?: string): string[] {
 
   const endpoints: string[] = [];
 
-  // 1. Explicit NEXT_PUBLIC_CHAT_API_URL
+  // 1. Same-origin Next.js /ask route (fastest, proxies server-side, no browser CORS)
+  endpoints.push('/ask');
+
+  // 2. Explicit NEXT_PUBLIC_CHAT_API_URL
   if (process.env.NEXT_PUBLIC_CHAT_API_URL) {
     endpoints.push(process.env.NEXT_PUBLIC_CHAT_API_URL);
   }
 
-  // 2. From NEXT_PUBLIC_BACKEND_URL
+  // 3. From NEXT_PUBLIC_BACKEND_URL
   const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
   if (backendUrl) {
     const base = backendUrl.replace(/\/+$/, '');
     if (base.includes('host.docker.internal')) {
-      // In host browser (outside docker), host.docker.internal resolves to localhost/127.0.0.1
       endpoints.push(`${base.replace('host.docker.internal', 'localhost')}/ask`);
       endpoints.push(`${base.replace('host.docker.internal', '127.0.0.1')}/ask`);
       endpoints.push(`${base}/ask`);
@@ -27,13 +29,9 @@ export function getCandidateEndpoints(customEndpoint?: string): string[] {
     }
   }
 
-  // 3. Same-origin Next.js /ask route
-  endpoints.push('/ask');
-
   // 4. Common local backend ports
   endpoints.push('http://localhost:8001/ask');
   endpoints.push('http://127.0.0.1:8001/ask');
-  endpoints.push('http://host.docker.internal:8001/ask');
   endpoints.push('http://localhost:8000/ask');
   endpoints.push('http://127.0.0.1:8000/ask');
 
@@ -74,6 +72,12 @@ export async function askQuestionStream(
   for (const endpoint of candidates) {
     if (signal?.aborted) return;
 
+    const timeoutCtrl = new AbortController();
+    const timeoutTimer = setTimeout(() => timeoutCtrl.abort(), 2000);
+
+    const onParentAbort = () => timeoutCtrl.abort();
+    signal?.addEventListener('abort', onParentAbort, { once: true });
+
     try {
       const res = await fetch(endpoint, {
         method: 'POST',
@@ -84,12 +88,14 @@ export async function askQuestionStream(
           thread_id: threadId,
           user_input: userInput,
         }),
-        signal,
+        signal: timeoutCtrl.signal,
       });
 
       if (res.ok && res.body) {
         response = res;
         cachedWorkingEndpoint = endpoint;
+        clearTimeout(timeoutTimer);
+        signal?.removeEventListener('abort', onParentAbort);
         break;
       } else {
         let errDetails = `HTTP error ${res.status}: ${res.statusText}`;
@@ -107,6 +113,9 @@ export async function askQuestionStream(
     } catch (err: unknown) {
       if (signal?.aborted) return;
       lastErrorMessage = err instanceof Error ? err.message : 'Network connection error';
+    } finally {
+      clearTimeout(timeoutTimer);
+      signal?.removeEventListener('abort', onParentAbort);
     }
   }
 

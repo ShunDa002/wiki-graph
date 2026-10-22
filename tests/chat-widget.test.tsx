@@ -124,4 +124,37 @@ describe('ChatWidget Component & Positioning', () => {
 
     expect(container).toHaveClass('sm:bottom-5');
   });
+
+  it('does not render into DOM and does not initialize listeners when ?chat=false is present', () => {
+    window.history.pushState({}, '', '/graph?chat=false');
+    const addEventListenerSpy = vi.spyOn(window, 'addEventListener');
+
+    render(<ChatWidget />);
+
+    expect(document.getElementById('chat-widget-root')).toBeNull();
+    expect(screen.queryByTestId('chat-widget-container')).toBeNull();
+    expect(screen.queryByRole('button', { name: /open ai chat assistant/i })).toBeNull();
+
+    // Verify keydown listener for chat escape is not initialized
+    const escapeListeners = addEventListenerSpy.mock.calls.filter(
+      ([event]) => event === 'keydown'
+    );
+    expect(escapeListeners).toHaveLength(0);
+
+    // Clean up history
+    window.history.pushState({}, '', '/');
+    addEventListenerSpy.mockRestore();
+  });
+
+  it('renders normally when query parameter is not ?chat=false (e.g. ?chat=true or empty)', () => {
+    window.history.pushState({}, '', '/graph?chat=true');
+
+    render(<ChatWidget />);
+
+    expect(document.getElementById('chat-widget-root')).toBeInTheDocument();
+    expect(screen.getByTestId('chat-widget-container')).toBeInTheDocument();
+
+    // Clean up history
+    window.history.pushState({}, '', '/');
+  });
 });

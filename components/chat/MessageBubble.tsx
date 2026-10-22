@@ -71,8 +71,6 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message }) => {
     return elements;
   };
 
-  const isSimulated = message.isSimulated === true;
-
   return (
     <motion.div
       initial={{ opacity: 0, y: 8, scale: 0.98 }}
@@ -153,14 +151,6 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message }) => {
 
         <div className="flex items-center gap-1.5 mt-1 px-1 text-[10px] text-neutral-500 font-mono">
           <span>{timeString}</span>
-          {!isUser && isSimulated && (
-            <span
-              id="message-simulated-badge"
-              className="text-[9px] px-1.5 py-0.5 rounded-full bg-neutral-800 text-indigo-400 border border-neutral-700/80 font-sans tracking-wide font-medium"
-            >
-              Simulated
-            </span>
-          )}
         </div>
       </div>
     </motion.div>

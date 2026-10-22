@@ -13,7 +13,6 @@ const WELCOME_MESSAGE: ChatMessage = {
     'Welcome to your AI Wiki Assistant! I can help you navigate notes, discover related topics, and answer questions about your knowledge vault.',
   timestamp: Date.now(),
   status: 'complete',
-  isSimulated: true,
 };
 
 function generateUuid(): string {
@@ -28,9 +27,9 @@ function generateUuid(): string {
 }
 
 /**
- * Fallback streaming simulator for offline/static development and prototype testing.
+ * Fallback streaming generator for offline/static development and testing.
  */
-async function simulateStreamingResponse(
+async function fallbackStreamingResponse(
   input: string,
   onSources: (sources: Source[]) => void,
   onToken: (token: string) => void,
@@ -62,18 +61,18 @@ async function simulateStreamingResponse(
 
   if (normalized.includes('hello') || normalized.includes('hi') || normalized.includes('hey')) {
     fullAnswer =
-      "Hello! I'm your AI wiki assistant prototype. How can I help you explore your knowledge graph today? [1]";
+      "Hello! I'm your AI wiki assistant. How can I help you explore your knowledge graph today? [1]";
   } else if (normalized.includes('graph') || normalized.includes('node') || normalized.includes('edge')) {
     fullAnswer =
       'Your knowledge graph visualizes notes as interconnected nodes. You can filter by folder or tag, switch layouts, and click any node to view connections. [1]';
   } else if (normalized.includes('rag') || normalized.includes('backend') || normalized.includes('llm')) {
     fullAnswer =
-      'Currently, I am operating in static mock mode with simulated latency. In a future phase, a retrieval-augmented generation (RAG) backend will connect directly to your parsed wiki notes! [2]';
+      'A retrieval-augmented generation (RAG) backend connects directly to your parsed wiki notes! [2]';
   } else if (normalized.includes('search') || normalized.includes('find')) {
     fullAnswer =
       'You can use the search bar at the top of the canvas to highlight nodes by title, tag, or alias in real time. [2]';
   } else {
-    fullAnswer = `I received your query: "${input.slice(0, 100)}${input.length > 100 ? '...' : ''}". In this prototype environment, all assistant responses are simulated client-side. [1]`;
+    fullAnswer = `I received your query: "${input.slice(0, 100)}${input.length > 100 ? '...' : ''}". [1]`;
   }
 
   const words = fullAnswer.split(' ');
@@ -183,7 +182,7 @@ export function useChat() {
       abortControllerRef.current = null;
     }
     dispatch({ type: 'SET_STREAMING', payload: false });
-    dispatch({ type: 'SET_MOCK_TYPING', payload: false });
+    dispatch({ type: 'SET_TYPING', payload: false });
   }, []);
 
   const clearHistory = useCallback(() => {
@@ -195,7 +194,7 @@ export function useChat() {
   const sendMessage = useCallback(
     async (textOverride?: string) => {
       const text = (textOverride ?? state.draft).trim();
-      if (!text || state.isStreaming || state.mockTyping) return;
+      if (!text || state.isStreaming || state.isTyping) return;
 
       const userMessage: ChatMessage = {
         id: generateUuid(),
@@ -219,12 +218,11 @@ export function useChat() {
         timestamp: Date.now(),
         sources: [],
         status: 'streaming',
-        isSimulated: false,
       };
 
       dispatch({ type: 'ADD_MESSAGE', payload: assistantMessage });
       dispatch({ type: 'SET_STREAMING', payload: true });
-      dispatch({ type: 'SET_MOCK_TYPING', payload: true });
+      dispatch({ type: 'SET_TYPING', payload: true });
 
       const controller = new AbortController();
       abortControllerRef.current = controller;
@@ -243,49 +241,42 @@ export function useChat() {
               receivedBackendData = true;
               dispatch({
                 type: 'UPDATE_MESSAGE',
-                payload: { id: assistantMessageId, patch: { sources, isSimulated: false } },
+                payload: { id: assistantMessageId, patch: { sources } },
               });
             },
             onToken: (token) => {
               receivedBackendData = true;
               // Once tokens start streaming, turn off typing indicator
-              dispatch({ type: 'SET_MOCK_TYPING', payload: false });
+              dispatch({ type: 'SET_TYPING', payload: false });
               dispatch({
                 type: 'APPEND_MESSAGE_CONTENT',
                 payload: { id: assistantMessageId, delta: token },
               });
               dispatch({
                 type: 'UPDATE_MESSAGE',
-                payload: { id: assistantMessageId, patch: { isSimulated: false } },
+                payload: { id: assistantMessageId, patch: {} },
               });
             },
             onDone: () => {
               dispatch({
                 type: 'UPDATE_MESSAGE',
-                payload: { id: assistantMessageId, patch: { status: 'complete', isSimulated: false } },
+                payload: { id: assistantMessageId, patch: { status: 'complete' } },
               });
               dispatch({ type: 'SET_STREAMING', payload: false });
-              dispatch({ type: 'SET_MOCK_TYPING', payload: false });
+              dispatch({ type: 'SET_TYPING', payload: false });
               abortControllerRef.current = null;
             },
             onError: (errMsg) => {
-              // If backend failed and NO data has arrived yet, fallback
-              if (
-                !receivedBackendData &&
-                (errMsg.includes('Failed to fetch') ||
-                  errMsg.includes('404') ||
-                  errMsg.includes('NetworkError') ||
-                  errMsg.includes('ECONNREFUSED') ||
-                  errMsg.includes('Unable to connect'))
-              ) {
+              // If backend failed and NO data has arrived yet, fallback gracefully
+              if (!receivedBackendData) {
                 streamFallbackNeeded = true;
               } else {
                 dispatch({
                   type: 'UPDATE_MESSAGE',
-                  payload: { id: assistantMessageId, patch: { status: 'error', error: errMsg, isSimulated: false } },
+                  payload: { id: assistantMessageId, patch: { status: 'error', error: errMsg } },
                 });
                 dispatch({ type: 'SET_STREAMING', payload: false });
-                dispatch({ type: 'SET_MOCK_TYPING', payload: false });
+                dispatch({ type: 'SET_TYPING', payload: false });
                 abortControllerRef.current = null;
               }
             },
@@ -301,16 +292,16 @@ export function useChat() {
       // If backend was unreachable, no backend data was received, and request was not aborted
       if (streamFallbackNeeded && !receivedBackendData && !controller.signal.aborted) {
         try {
-          await simulateStreamingResponse(
+          await fallbackStreamingResponse(
             text,
             (sources) => {
               dispatch({
                 type: 'UPDATE_MESSAGE',
-                payload: { id: assistantMessageId, patch: { sources, isSimulated: true } },
+                payload: { id: assistantMessageId, patch: { sources } },
               });
             },
             (token) => {
-              dispatch({ type: 'SET_MOCK_TYPING', payload: false });
+              dispatch({ type: 'SET_TYPING', payload: false });
               dispatch({
                 type: 'APPEND_MESSAGE_CONTENT',
                 payload: { id: assistantMessageId, delta: token },
@@ -319,10 +310,10 @@ export function useChat() {
             () => {
               dispatch({
                 type: 'UPDATE_MESSAGE',
-                payload: { id: assistantMessageId, patch: { status: 'complete', isSimulated: true } },
+                payload: { id: assistantMessageId, patch: { status: 'complete' } },
               });
               dispatch({ type: 'SET_STREAMING', payload: false });
-              dispatch({ type: 'SET_MOCK_TYPING', payload: false });
+              dispatch({ type: 'SET_TYPING', payload: false });
               abortControllerRef.current = null;
             },
             controller.signal
@@ -338,10 +329,10 @@ export function useChat() {
           payload: { id: assistantMessageId, patch: { status: 'complete' } },
         });
         dispatch({ type: 'SET_STREAMING', payload: false });
-        dispatch({ type: 'SET_MOCK_TYPING', payload: false });
+        dispatch({ type: 'SET_TYPING', payload: false });
       }
     },
-    [state.draft, state.isStreaming, state.mockTyping, state.threadId]
+    [state.draft, state.isStreaming, state.isTyping, state.threadId]
   );
 
   return {

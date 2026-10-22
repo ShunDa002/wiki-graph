@@ -115,7 +115,7 @@ describe('Multi-Layout Canvas Unification & Contextual Controls', () => {
       expect(screen.getByTitle('Fit View / Reset Camera')).toBeInTheDocument();
 
       // Simulation & layout buttons are present in all layouts
-      const simBtn = screen.getByTitle('Physics simulation is inactive in static layouts');
+      const simBtn = screen.getByTitle('Physics engine is inactive in static layouts');
       expect(simBtn).toBeInTheDocument();
       expect(simBtn).toBeDisabled();
 
@@ -143,7 +143,7 @@ describe('Multi-Layout Canvas Unification & Contextual Controls', () => {
     });
 
     // In grid layout -> buttons remain present; simulation button becomes disabled with inactive tooltip
-    const gridSimBtn = screen.getByTitle('Physics simulation is inactive in static layouts');
+    const gridSimBtn = screen.getByTitle('Physics engine is inactive in static layouts');
     expect(gridSimBtn).toBeInTheDocument();
     expect(gridSimBtn).toBeDisabled();
     expect(screen.getByTitle('Refresh Graph')).toBeInTheDocument();

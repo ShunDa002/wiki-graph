@@ -8,20 +8,20 @@ import { MessageSquareDashed } from 'lucide-react';
 
 interface MessageViewportProps {
   messages: ChatMessage[];
-  mockTyping?: boolean;
+  isTyping?: boolean;
   isStreaming?: boolean;
 }
 
 export const MessageViewport: React.FC<MessageViewportProps> = ({
   messages,
-  mockTyping = false,
+  isTyping = false,
   isStreaming = false,
 }) => {
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView?.({ behavior: 'smooth' });
-  }, [messages, mockTyping, isStreaming]);
+  }, [messages, isTyping, isStreaming]);
 
   // For active streaming tokens, keep scroll pinned
   const lastMessage = messages[messages.length - 1];
@@ -43,7 +43,7 @@ export const MessageViewport: React.FC<MessageViewportProps> = ({
       aria-label="Chat messages history"
       className="flex-1 overflow-y-auto px-1 py-3 space-y-1 scroll-smooth focus:outline-none"
     >
-      {messages.length === 0 && !mockTyping && (
+      {messages.length === 0 && !isTyping && (
         <div className="h-full flex flex-col items-center justify-center p-6 text-center text-neutral-500 gap-2">
           <MessageSquareDashed className="w-8 h-8 stroke-1 text-neutral-600" />
           <p className="text-xs">No messages yet. Send a prompt below to start chatting!</p>
@@ -54,7 +54,7 @@ export const MessageViewport: React.FC<MessageViewportProps> = ({
         <MessageBubble key={msg.id} message={msg} />
       ))}
 
-      {mockTyping && !hasStreamingMessage && <TypingIndicator />}
+      {isTyping && !hasStreamingMessage && <TypingIndicator />}
 
       <div ref={bottomRef} className="h-2" />
     </div>

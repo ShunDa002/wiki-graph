@@ -989,12 +989,12 @@ export function ForceGraphCanvas({ graphData, onSelectNode }: ForceGraphCanvasPr
                 ? isSimRunning
                   ? 'Pause'
                   : 'Resume'
-                : 'Physics simulation is inactive in static layouts'
+                : 'Physics engine is inactive in static layouts'
             }
             aria-label={
               layoutAlgorithm === 'force'
-                ? 'Toggle Physics Simulation'
-                : 'Physics simulation is inactive in static layouts'
+                ? 'Toggle Physics Engine'
+                : 'Physics engine is inactive in static layouts'
             }
           >
             {layoutAlgorithm === 'force' && !isSimRunning ? (

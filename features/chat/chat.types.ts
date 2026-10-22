@@ -24,7 +24,6 @@ export interface ChatMessage {
   sources?: Source[];
   status?: MessageStatus;
   error?: string;
-  isSimulated?: boolean;
 }
 
 export interface ChatState {
@@ -34,7 +33,7 @@ export interface ChatState {
   draft: string;
   messages: ChatMessage[];
   isStreaming: boolean;
-  mockTyping: boolean;
+  isTyping: boolean;
   unreadCount: number;
   storageWarning: string | null;
   threadId: string;
@@ -49,7 +48,7 @@ export type ChatAction =
   | { type: 'APPEND_MESSAGE_CONTENT'; payload: { id: string; delta: string } }
   | { type: 'SET_MESSAGES'; payload: ChatMessage[] }
   | { type: 'SET_STREAMING'; payload: boolean }
-  | { type: 'SET_MOCK_TYPING'; payload: boolean }
+  | { type: 'SET_TYPING'; payload: boolean }
   | { type: 'SET_HYDRATED'; payload: boolean }
   | { type: 'SET_INITIALIZED'; payload: boolean }
   | { type: 'SET_THREAD_ID'; payload: string }

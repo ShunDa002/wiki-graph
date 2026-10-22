@@ -15,7 +15,7 @@ export interface ChatState {
   initialized: boolean;
   draft: string;
   messages: ChatMessage[];
-  mockTyping: boolean;
+  isTyping: boolean;
   unreadCount: number;
 }
 
